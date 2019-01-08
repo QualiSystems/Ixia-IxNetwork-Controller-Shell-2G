@@ -1,0 +1,87 @@
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxiaIxnetworkControllerShell2GDriver"
+        Name="IxiaIxnetworkControllerShell2GDriver" Version="1.0.0">
+    <Layout>
+
+        <Category Name="Hidden Commands">
+
+            <Command Name="get_session_id" DisplayName="get_session_id"
+                     Description="API only command to get REST session ID"/>
+
+            <Command Name="get_children" DisplayName="get_children"
+                     Description="API only command to get list of children">
+                <Parameters>
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
+                    <Parameter Name="child_type" Type="String" Mandatory="True" DisplayName="child_type"
+                               Description="Requested children type. If None returns all children"/>
+                </Parameters>
+            </Command>
+
+            <Command Name="get_attributes" DisplayName="get_attributes"
+                     Description="API only command to get object attributes">
+                <Parameters>
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
+                </Parameters>
+            </Command>
+
+            <Command Name="set_attribute" DisplayName="set_attribute"
+                     Description="API only command to set traffic generator object attribute">
+                <Parameters>
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
+                    <Parameter Name="attr_name" Type="String" Mandatory="True" DisplayName="attr_name"
+                               Description="Attribute name"/>
+                    <Parameter Name="attr_value" Type="String" Mandatory="True" DisplayName="attr_value"
+                               Description="Attribute value"/>
+                </Parameters>
+            </Command>
+
+            <Command Name="cleanup_reservation" DisplayName="Cleanup Reservation" Tags="" Description=""
+                     EnableCancellation="true"/>
+
+            <Command Name="cleanup" Tags="" Description=""/>
+
+            <Command Name="keep_alive" DisplayName="Keep Alive" Tags="" Description="" EnableCancellation="true"/>
+
+        </Category>
+
+        <Command Name="load_config" DisplayName="Load Configuration" Description="Reserve ports and load configuration">
+            <Parameters>
+                <Parameter Name="config_file_location" Type="String" Mandatory="True"
+                           DisplayName="Configuration File Location"
+                           Description="Full path to the configuration file"/>
+            </Parameters>
+        </Command>
+
+        <Command Name="start_traffic" DisplayName="Start Traffic" Description="Start traffic on all ports">
+            <Parameters>
+                <Parameter Name="blocking" Type="Lookup" Mandatory="False" AllowedValues="True,False"
+                           DisplayName="Block"
+                           Description="True - return after traffic finish to run, False - return immediately"
+                           DefaultValue="False"/>
+            </Parameters>
+        </Command>
+
+        <Command Name="stop_traffic" DisplayName="Stop Traffic" Description="Stop traffic on all ports"/>
+
+        <Command Name="get_statistics" DisplayName="Get Statistics"
+                 Description="Get real time statistics as sandbox attachment">
+            <Parameters>
+                <Parameter Name="view_name" Type="String" Mandatory="True" DisplayName="View Name"
+                           Description="The requested view name, see shell's documentation for details"/>
+                <Parameter Name="output_type" Type="Lookup" Mandatory="True" AllowedValues="csv,json"
+                           DisplayName="Output Type" DefaultValue="csv" Description="CSV or JSON"/>
+            </Parameters>
+        </Command>
+
+        <Command Name="send_arp" DisplayName="Start ARP/ND" Description="Send ARP/ND for all protocols"/>
+
+        <Command Name="start_protocols" DisplayName="Start Protocols" Description="Start all protocols"/>
+
+        <Command Name="stop_protocols" DisplayName="Stop Protocols" Description="Stop all protocols"/>
+
+        <Command Name="run_quick_test" DisplayName="Run Quick Test" Description="Run quick test"/>
+
+    </Layout>
+</Driver>
