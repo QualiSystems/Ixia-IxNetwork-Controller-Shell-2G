@@ -1,13 +1,16 @@
-from cloudshell.shell.core.resource_driver_interface import ResourceDriverInterface
+from cloudshell.traffic.driver import TrafficControllerDriver
+import cloudshell.traffic.tg_helper as tg_helper
+
+from ixn_handler import IxnHandler
 
 
-class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
+class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
     SHELL_TYPE = "CS_TrafficGeneratorController"
     SHELL_NAME = "Ixia IxNetwork Controller Shell 2G"
 
     def __init__(self):
         super(IxiaIxnetworkControllerShell2GDriver, self).__init__()
-        self._cli = None
+        self.handler = IxnHandler()
 
     def initialize(self, context):
         """
@@ -15,12 +18,6 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context: ResourceCommandContext,ReservationContextDetailsobject with all Resource Attributes inside
         :type context:  context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
-        resource_config = IxiaIxnetworkControllerShell2GDriver.from_context(context=context,
-                                                                            shell_name=self.SHELL_NAME,
-                                                                            shell_type=self.SHELL_TYPE)
-        session_pool_size = int(resource_config.sessions_concurrency_limit)
-        # self._cli = get_cli(session_pool_size)
-
         return 'Finished initializing'
 
     def load_config(self, context, config_file_location):
@@ -30,7 +27,11 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param str config_file_location: configuration file location
         :return:
         """
-        pass
+        self.logger.info('ixn_config_file_name = ' + config_file_location)
+        super(IxiaIxnetworkControllerShell2GDriver, self).load_config(context)
+        self.handler.load_config(context, config_file_location)
+
+        return config_file_location + ' loaded, ports reserved'
 
     def start_traffic(self, context, blocking):
         """Start traffic on all ports
@@ -38,14 +39,14 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context: the context the command runs on
         :param bool blocking: True - return after traffic finish to run, False - return immediately
         """
-        pass
+        self.handler.start_traffic(blocking)
 
     def stop_traffic(self, context):
         """Stop traffic on all ports
 
         :param context: the context the command runs on
         """
-        pass
+        self.handler.stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
         """Get real time statistics as sandbox attachment
@@ -55,7 +56,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param str output_type: CSV or JSON
         :return:
         """
-        pass
+        return self.handler.get_statistics(context, view_name, output_type)
 
     def send_arp(self, context):
         """Send ARP/ND for all protocols
@@ -63,7 +64,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context:
         :return:
         """
-        pass
+        self.handler.send_arp()
 
     def start_protocols(self, context):
         """Start all protocols
@@ -71,7 +72,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context:
         :return:
         """
-        pass
+        self.handler.start_protocols()
 
     def stop_protocols(self, context):
         """Stop all protocols
@@ -79,15 +80,19 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context:
         :return:
         """
-        pass
+        self.handler.stop_protocols()
 
-    def run_quick_test(self, context):
+    def run_quick_test(self, context, test):
         """Run quick test
 
         :param context:
+        :param test: name of quick test to run
         :return:
         """
-        pass
+        quick_test_resut = self.handler.run_quick_test(context, test)
+        tg_helper.write_to_reservation_out(context, 'Quick test result = ' + quick_test_resut)
+
+        return quick_test_resut
 
     def get_session_id(self, context):
         """API only command to get REST session ID
@@ -95,7 +100,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param context:
         :return:
         """
-        pass
+        return self.handler.get_session_id()
 
     def get_children(self, context, obj_ref, child_type):
         """API only command to get list of children
@@ -105,7 +110,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param str child_type: requested children type. If None returns all children
         :return:
         """
-        pass
+        return self.handler.get_children(obj_ref, child_type)
 
     def get_attributes(self, context, obj_ref):
         """API only command to get object attributes
@@ -114,7 +119,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param str obj_ref: valid object reference
         :return:
         """
-        pass
+        return self.handler.get_attributes(obj_ref)
 
     def set_attribute(self, context, obj_ref, attr_name, attr_value):
         """API only command to set traffic generator object attribute
@@ -125,7 +130,7 @@ class IxiaIxnetworkControllerShell2GDriver(ResourceDriverInterface):
         :param str attr_value: attribute value
         :return:
         """
-        pass
+        self.handler.set_attribute(obj_ref, attr_name, attr_value)
 
     def cleanup_reservation(self, context):
         """Clear reservation when it ends
