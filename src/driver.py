@@ -10,7 +10,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
 
     def __init__(self):
         super(IxiaIxnetworkControllerShell2GDriver, self).__init__()
-        self.handler = IxnHandler()
+        self.handler = IxnHandler(shell_name=self.SHELL_NAME)
 
     def initialize(self, context):
         """
@@ -18,6 +18,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :param context: ResourceCommandContext,ReservationContextDetailsobject with all Resource Attributes inside
         :type context:  context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
+        super(IxiaIxnetworkControllerShell2GDriver, self).initialize(context)
         return 'Finished initializing'
 
     def load_config(self, context, config_file_location):
@@ -146,7 +147,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :param context:
         :return:
         """
-        pass
+        return super(IxiaIxnetworkControllerShell2GDriver, self).cleanup()
 
     def keep_alive(self, context, cancellation_context):
         """
@@ -155,4 +156,4 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :param cancellation_context:
         :return:
         """
-        pass
+        return super(IxiaIxnetworkControllerShell2GDriver, self).keep_alive(context, cancellation_context)
