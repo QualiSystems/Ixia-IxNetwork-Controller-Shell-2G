@@ -141,7 +141,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         """
         pass
 
-    def cleanup(self, context):
+    def cleanup(self, context=None):
         """
 
         :param context:
@@ -157,3 +157,40 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :return:
         """
         return super(IxiaIxnetworkControllerShell2GDriver, self).keep_alive(context, cancellation_context)
+
+
+if __name__ == "__main__":
+    import mock
+    from cloudshell.shell.core.driver_context import ResourceCommandContext, ResourceContextDetails, ReservationContextDetails
+
+    address = '192.168.85.41'
+
+    port = 8888
+    auth_key = 'h8WRxvHoWkmH8rLQz+Z/pg=='
+    api_port = 8029
+
+    context = ResourceCommandContext(*(None, ) * 4)
+    context.resource = ResourceContextDetails(*(None, ) * 13)
+    context.resource.name = "IxNetwork"
+    context.resource.fullname = "IxNetwork"
+    context.reservation = ReservationContextDetails(*(None, ) * 7)
+    context.resource.attributes = {}
+
+    for attr, value in [("Address", address),
+                        ("Controller TCP Port", port)]:
+        context.resource.attributes["{}.{}".format(IxiaIxnetworkControllerShell2GDriver.SHELL_NAME, attr)] = value
+
+    context.resource.address = address
+
+    context.connectivity = mock.MagicMock()
+    context.connectivity.server_address = "192.168.85.14"
+
+    dr = IxiaIxnetworkControllerShell2GDriver()
+    dr.initialize(context)
+
+    out = dr.load_config(context, "C:\conf.ixncfg")
+    # out = dr.keep_alive(context, mock.MagicMock())
+    # out = dr.start_traffic(context)
+    # out = dr.stop_traffic(context)
+    # out = dr.get_results(context)
+    # out = dr.cleanup_reservation(context)

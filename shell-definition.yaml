@@ -16,6 +16,9 @@ node_types:
 
   vendor.resource.Ixia IxNetwork Controller Shell 2G:
     derived_from: cloudshell.nodes.TrafficGeneratorController
+    capabilities:
+      concurrent_execution:
+        type: cloudshell.capabilities.SupportConcurrentCommands
     artifacts:
       icon:
         file: shell-icon.png
