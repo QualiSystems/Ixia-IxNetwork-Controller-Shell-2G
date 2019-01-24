@@ -40,7 +40,7 @@ The **Ixia IxNetwork Controller** provides automation commands to run on the cha
 
 
 ### Standard version
-The **Ixia IxNetwork Controller 2G** shell is based on the Traffic Shell Standard version 3.0.0.
+The **Ixia IxNetwork Controller 2G** shell is based on the Traffic Generator Controller Standard version 2.0.0.
 
 For detailed information about the shell’s structure and attributes, see the [Traffic Shell standard](https://github.com/QualiSystems/shell-traffic-standard/blob/master/spec/traffic_standard.md) in GitHub.
 
@@ -93,16 +93,11 @@ This section describes how to import the Ixia IxNetwork Controller 2G shell and 
 
 **To import the shell into CloudShell:**
   1. Make sure you have the shell’s zip package. If not, download the shell from the [Quali Community's Integrations](https://community.quali.com/integrations) page.
-  
-  2. Backup your database.
-  
-  3. Log in to CloudShell Portal as administrator of the relevant domain.
-  
-  4. In the user menu select **Import Package**.
-  
-     ![](https://github.com/stsuberi/SaraTest/blob/master/import_package.png)
-     
-  5. Browse to the location of the downloaded shell file, select the relevant *.zip* file and click **Open**. Alternatively, drag the shell’s .zip file into CloudShell Portal.
+  2. In CloudShell Portal, as Global administrator, open the **Manage – Shells** page.
+  3. Click **Import**.
+  4. In the dialog box, navigate to the shell's zip package, select it and click **Open**.
+
+The shell is displayed in the **Shells** page and can be used by domain administrators in all CloudShell domains to create new inventory resources, as explained in [Adding Inventory Resources](http://help.quali.com/Online%20Help/9.0/Portal/Content/CSP/INVN/Add-Rsrc-Tmplt.htm?Highlight=adding%20inventory%20resources). 
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The service can now be added to a blueprint from the **Apps/Service** catalog's **Networking** category.  
 
@@ -152,29 +147,6 @@ full path"/>`
 full path"/>`
 
 5. Restart the Execution Server.
-
-### Configuring a new service
-This section explains how to set the controller's default values in the service. 
-
-The controller service enables end users to use the traffic generator chassis to perform their testing activity, including starting and stopping traffic, getting statistics and loading configurations.  
-
-For more information, see [Services Overview](http://help.quali.com/Online%20Help/9.0/Portal/Content/CSP/LAB-MNG/Services.htm?Highlight=services).
-
-**To configure a service for the device:**
-  1. In CloudShell Resource Manager, in the **Admin** tab, click **Resource Families**. 
-          
-  2. In the **Traffic Generator Controller** folder, select **IxNetwork Controller**.
-  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://github.com/QualiSystems/Ixia-IxNetworkController-Shell/blob/master/ixnetwork_controller.png)
-  
-  3. In the **Attributes** tab, enter the **Default Values** for the **IxNetwork Controller** service as follows:
-  
-     * **Controller Address** - IP address of the API Server/Connection Manager. Default is localhost.
-     * **Controller TCP Port** - TCP port of the API Server/Connection Manager. Default is 11009.
-     * **Password** - Password used in deployment (optional).
-     * **User** - Username used in deployment (optional).
-          
-  4. Click **Save**.
   
 # Updating Python Dependencies for Shells
 This section explains how to update your Python dependencies folder. This is required when you upgrade a shell that uses new/updated dependencies. It applies to both online and offline dependencies.
@@ -200,29 +172,17 @@ In order to expose a service to users of a domain that is not the Global domain,
 
 When you import a service shell, most shells are automatically assigned a default service category which is associated with the Global domain. For custom shells, this may not be true.
 
-**To associate the Ixia IxNetwork Controller 2G service to a non-global domain:**
+**To associate the Ixia IxNetwork Controller 2G service to a domain:**
 
 **Note:** The association process differs depending on the type of shell - second generation (2G) shell or first generation (1G) shell. The instructions below detail the steps for a 2G service shell.
 
-1. (Optional) You can associate the service to a service category that already exists in CloudShell or associate the service to a new category.
+1. (Optional) To associate the service to a new service category(s): 
 
-	**Note:** If you do not want to change the category(s) of this shell, you can use the default category that comes out-of-the-box (if it exists).
-	 
-	* Associate the service family to an existing category(s).
+	**Note:** If you do not want to add a new category(s) to this shell, you can use the default category that comes out-of-the-box (if it exists).
 	
-		1. In Resource Manager Client, open the **Resource Families** explorer and click the relevant service family.
+	• Modify the *shelldefinition.yaml* file to add a service category(s) to the shell. See the CloudShell Developer Guide’s [Associating categories to a service shell](https://devguide.quali.com/shells/9.0.0/customizing-shells.html#associating-categories-to-a-service-shell) article. Note that when importing the shell into CloudShell, the new categories will be linked automatically with the Global domain.
 	
-		2. From the right pane, open the **Categories** tab.
-	
-		3. Click **Add**. The **Select Category** dialog box is displayed. 
-	
-		4. Select a category from the catalog and click **OK**.
-	
-	or
-
-	* Modify the 2G category(s) in the shell project’s configuration files to add a new category(s). See [Associating categories to 1st Gen Service Shells](https://devguide.quali.com/reference/9.0.0/associating-service-categories.html).
-
-2. Associate the shell’s service category to a domain.
+2. Associate the shell’s service category (either the out-of-the-box category or the new category you created in step 1) to a non-Global domain.
 	1. In the **Manage** dashboard, click **Categories** from the left sidebar, or **Domains** if you are a domain admin.
 	
 	2. Select **Services Categories**.
@@ -252,11 +212,11 @@ When you import a service shell, most shells are automatically assigned a defaul
 	
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://github.com/QualiSystems/Ixia-IxNetworkController-Shell/blob/master/ixnetwork_controller_blueprint_two_ports.png)
 
-3. In the blueprint toolbar, click **App/Service>Traffic Generator Controllers** and drag the **IxNetwork Controller** service into the diagram.
+3. In the blueprint toolbar, click **App/Service>CS_TrafficGeneratorController** and drag the **Ixia IxNetwork Controller Shell 2G** service into the diagram.
 
 4. Reserve the blueprint.
 
-5. Edit the **IxNetwork Controller** service parameters if required, see [Configuring a new service](#configuring_a_new_service).
+5. Edit the **Ixia IxNetwork Controller Shell 2G** service parameters if required
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://github.com/QualiSystems/Ixia-IxNetworkController-Shell/blob/master/ixnetwork_controller_configuration_parameters.png)
 
