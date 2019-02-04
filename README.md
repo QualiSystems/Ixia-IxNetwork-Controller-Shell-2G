@@ -69,7 +69,7 @@ For Traffic Generator shells, commands are configured and executed from the cont
 |Start ARP/ND|Send ARP/ND for all protocols.|
 |Start Protocols|Starts all protocols.|
 |Stop Protocols|Stops all protocols.|
-|Start Traffic|Starts L2-3 traffic.<br>Possible values:<br>* **Blocking**: **True**: Returns after traffic finishes to run<br>* **False**: Returns immediately|
+|Start Traffic|Starts L2-3 traffic.<br>Possible values:<br>* **Blocking**:<br>  - **True**: Returns after traffic finishes to run<br>  - **False**: Returns immediately|
 |Stop Traffic|Stops L2-L3 traffic.|
 |Get Statistics|Gets view statistics.<br>Possible values:<br>* **View Name**: **Port statistics**, **Traffic item statistics**, **Flow statistics**, etc.<br>* **Output type**: **CSV**, **JSON**. If **CSV**, the statistics will be attached to the blueprint csv file.|
 |Run Quick Test|Runs Quick test.<br>Set the command inputs as follows:<br>* **Quick Test Name**: Name of quick test to run.|
@@ -97,9 +97,7 @@ This section describes how to import the Ixia IxNetwork Controller 2G shell and 
   3. Click **Import**.
   4. In the dialog box, navigate to the shell's zip package, select it and click **Open**.
 
-The shell is displayed in the **Shells** page and can be used by domain administrators in all CloudShell domains to create new inventory resources, as explained in [Adding Inventory Resources](http://help.quali.com/Online%20Help/9.0/Portal/Content/CSP/INVN/Add-Rsrc-Tmplt.htm?Highlight=adding%20inventory%20resources). 
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The service can now be added to a blueprint from the **Apps/Service** catalog's **Networking** category.  
+The service can now be added to a blueprint from the **Apps/Service** catalog's **Networking** category.  
 
 ### Offline installation of a shell
 
@@ -216,7 +214,7 @@ When you import a service shell, most shells are automatically assigned a defaul
 
 4. Reserve the blueprint.
 
-5. Edit the **Ixia IxNetwork Controller Shell 2G** service parameters if required
+5. Edit the **Ixia IxNetwork Controller Shell 2G** service parameters if required.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://github.com/QualiSystems/Ixia-IxNetwork-Controller-Shell-2G/blob/master/ixnetwork_controller_configuration_parameters.png)
 
@@ -241,10 +239,10 @@ To connect with Quali users and experts from around the world, ask questions and
 For release updates, see the shell's [GitHub releases page](https://github.com/QualiSystems/Ixia-IxNetwork-Controller-Shell-2G/releases).
 
 ### Known Issues
-• **Performance**: The REST API performance is very poor. Loading configuration and reserving ports can take a number of seconds, depending on the specific setup. You are advised to start idle connections on the Connection Manager to reduce startup time.
+• **Performance**: REST API performance is very poor. Loading a configuration and reserving ports may take a number of seconds, depending on your particular setup. You are advised to start idle connections on the Connection Manager to reduce startup time.
 
-• **No available connection on connection manager**: If there is no available connection on the Connection Manager, you must login to the Connection Manager and close zombie connections or create new connections.
+• **No available connection on the connection manager**: If there is no connection available on the Connection Manager, you must login to Connection Manager, close zombie connections or create new connections.
 
-• **Licensing**: If the license server on the Connection Manager/API server is not configured, **Load Configuration** might successfully run, but the ports will be in a Down state and any further operations will fail.
+• **Licensing**: If the License server on the Connection Manager/API server is not configured, **Load Configuration** may run successfully, however the ports state will be Down and any further operations will fail.
 
-• **Reserved ports**: If ports are reserved by other users, **Load Configuration** might successfully run, but ports will be in a Down state and any further operations will fail. 
+• **Reserved ports**: If ports are reserved by other users, **Load Configuration** may run successfully, however the ports state will be Down and any further operations will fail.
