@@ -44,6 +44,8 @@ The **Ixia IxNetwork Controller 2G** shell is based on the Traffic Generator Con
 
 For detailed information about the shell’s structure and attributes, see the [Traffic Shell standard](https://github.com/QualiSystems/shell-traffic-standard/blob/master/spec/traffic_standard.md) in GitHub.
 
+The **Client Install Path** attribute is not relevant for the Ixia IxNetwork Controller.
+
 ### Supported OS
 ▪ Windows
 
