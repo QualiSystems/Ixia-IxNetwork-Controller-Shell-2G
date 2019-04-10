@@ -19,9 +19,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :type context:  context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
         """
         super(IxiaIxnetworkControllerShell2GDriver, self).initialize(context)
-        tg_helper.enqueue_keep_alive(context)  # todo: run "enqueue_keep_alive" command in the base class
-
-        return 'Finished initiaizing'
+        return 'Finished initializing'
 
     def load_config(self, context, config_file_location):
         """Reserve ports and load configuration
@@ -31,6 +29,7 @@ class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
         :return:
         """
         self.logger.info('ixn_config_file_name = ' + config_file_location)
+        super(IxiaIxnetworkControllerShell2GDriver, self).load_config(context)
         self.handler.load_config(context, config_file_location)
 
         return config_file_location + ' loaded, ports reserved'
