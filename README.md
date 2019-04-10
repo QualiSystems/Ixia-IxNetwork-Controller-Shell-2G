@@ -57,7 +57,7 @@ Release: **Ixia IxNetwork Controller 2G**
 
 ▪ IxNetwork Connection Manager: 8.40 EA and above 
 
-▪ CloudShell: 8.1 and above
+▪ CloudShell version: 8.3 GA Patch 3, 9.0 Patch 2, 9.1 GA and above
 
 ### Automation
 This section describes the automation (driver) associated with the data model. The shell’s driver is provided as part of the shell package. There are two types of automation processes, Autoload and Resource.  Autoload is executed when creating the resource in the **Inventory** dashboard, while resource commands are run in the sandbox.
