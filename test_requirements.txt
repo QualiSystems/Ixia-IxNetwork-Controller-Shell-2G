@@ -1,4 +1,5 @@
 pytest
+GitPython
 
 cloudshell-shell-core
 cloudshell-automation-api>=9.1,<9.2
