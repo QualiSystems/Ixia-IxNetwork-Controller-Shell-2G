@@ -4,193 +4,111 @@ import cloudshell.traffic.tg_helper as tg_helper
 from ixn_handler import IxnHandler
 
 
-class IxiaIxnetworkControllerShell2GDriver(TrafficControllerDriver):
-    SHELL_TYPE = "CS_TrafficGeneratorController"
-    SHELL_NAME = "Ixia IxNetwork Controller Shell 2G"
+class IxNetworkControllerShell2GDriver(TrafficControllerDriver):
 
     def __init__(self):
-        super(IxiaIxnetworkControllerShell2GDriver, self).__init__()
-        self.handler = IxnHandler(shell_name=self.SHELL_NAME)
-
-    def initialize(self, context):
-        """
-
-        :param context: ResourceCommandContext,ReservationContextDetailsobject with all Resource Attributes inside
-        :type context:  context: cloudshell.shell.core.driver_context.ResourceRemoteCommandContext
-        """
-        super(IxiaIxnetworkControllerShell2GDriver, self).initialize(context)
-        return 'Finished initializing'
+        super(self.__class__, self).__init__()
+        self.handler = IxnHandler()
 
     def load_config(self, context, config_file_location):
-        """Reserve ports and load configuration
+        """ Load IxNetwork configuration file and reserve ports.
 
-        :param context:
-        :param str config_file_location: configuration file location
-        :return:
+        :param config_file_location: Full path to IxNetwork configuration file name - ixncfg
         """
-        self.logger.info('ixn_config_file_name = ' + config_file_location)
-        super(IxiaIxnetworkControllerShell2GDriver, self).load_config(context)
+        super(self.__class__, self).load_config(context)
         self.handler.load_config(context, config_file_location)
 
-        return config_file_location + ' loaded, ports reserved'
-
-    def start_traffic(self, context, blocking):
-        """Start traffic on all ports
-
-        :param context: the context the command runs on
-        :param bool blocking: True - return after traffic finish to run, False - return immediately
-        """
-        self.handler.start_traffic(blocking)
-
-    def stop_traffic(self, context):
-        """Stop traffic on all ports
-
-        :param context: the context the command runs on
-        """
-        self.handler.stop_traffic()
-
-    def get_statistics(self, context, view_name, output_type):
-        """Get real time statistics as sandbox attachment
-
-        :param context:
-        :param str view_name: requested view name
-        :param str output_type: CSV or JSON
-        :return:
-        """
-        return self.handler.get_statistics(context, view_name, output_type)
-
     def send_arp(self, context):
-        """Send ARP/ND for all protocols
-
-        :param context:
-        :return:
-        """
+        """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
         self.handler.send_arp()
 
     def start_protocols(self, context):
-        """Start all protocols
-
-        :param context:
-        :return:
-        """
+        """ Start all protocols (classic and ngpf) on all ports. """
         self.handler.start_protocols()
 
     def stop_protocols(self, context):
-        """Stop all protocols
-
-        :param context:
-        :return:
-        """
+        """ Stop all protocols (classic and ngpf) on all ports. """
         self.handler.stop_protocols()
 
-    def run_quick_test(self, context, test):
-        """Run quick test
+    def start_traffic(self, context, blocking):
+        """ Start traffic on all ports.
 
-        :param context:
+        :param blocking: True - return after traffic finish to run, False - return immediately.
+        """
+        self.handler.start_traffic(blocking)
+        return 'traffic started in {} mode'.format(blocking)
+
+    def stop_traffic(self, context):
+        """ Stop traffic on all ports. """
+        self.handler.stop_traffic()
+
+    def get_statistics(self, context, view_name, output_type):
+        """ Get view statistics.
+
+        :param view_name: port, traffic item, flow group etc.
+        :param output_type: CSV or JSON.
+        """
+        return self.handler.get_statistics(context, view_name, output_type)
+
+    def run_quick_test(self, context, test):
+        """ Run quick test in blocking mode.
+
         :param test: name of quick test to run
         :return:
         """
         quick_test_resut = self.handler.run_quick_test(context, test)
         tg_helper.write_to_reservation_out(context, 'Quick test result = ' + quick_test_resut)
-
         return quick_test_resut
 
-    def get_session_id(self, context):
-        """API only command to get REST session ID
+    #
+    # Parent commands are not visible so we re define them in child.
+    #
 
-        :param context:
-        :return:
+    def initialize(self, context):
+        super(self.__class__, self).initialize(context)
+
+    def cleanup(self):
+        super(self.__class__, self).cleanup()
+
+    def cleanup_reservation(self, context):
+        pass
+
+    def keep_alive(self, context, cancellation_context):
+        super(self.__class__, self).keep_alive(context, cancellation_context)
+
+    #
+    # Hidden commands for developers only.
+    #
+
+    def get_session_id(self, context):
+        """ API only command to get REST session ID.
+
+        return: session ID
         """
         return self.handler.get_session_id()
 
     def get_children(self, context, obj_ref, child_type):
-        """API only command to get list of children
+        """ API only command to get list of children.
 
-        :param context:
         :param str obj_ref: valid object reference
         :param str child_type: requested children type. If None returns all children
-        :return:
+        :return: list(object references of children)
         """
         return self.handler.get_children(obj_ref, child_type)
 
     def get_attributes(self, context, obj_ref):
-        """API only command to get object attributes
+        """ API only command to get object attributes.
 
-        :param context:
         :param str obj_ref: valid object reference
-        :return:
+        :return: dict(key, values) of all attributes
         """
         return self.handler.get_attributes(obj_ref)
 
     def set_attribute(self, context, obj_ref, attr_name, attr_value):
-        """API only command to set traffic generator object attribute
+        """ API only command to set traffic generator object attribute.
 
-        :param context:
         :param str obj_ref: valid object reference
         :param str attr_name: attribute name
         :param str attr_value: attribute value
-        :return:
         """
         self.handler.set_attribute(obj_ref, attr_name, attr_value)
-
-    def cleanup_reservation(self, context):
-        """Clear reservation when it ends
-
-        :param context:
-        :return:
-        """
-        pass
-
-    def cleanup(self, context=None):
-        """
-
-        :param context:
-        :return:
-        """
-        return super(IxiaIxnetworkControllerShell2GDriver, self).cleanup()
-
-    def keep_alive(self, context, cancellation_context):
-        """
-
-        :param context:
-        :param cancellation_context:
-        :return:
-        """
-        return super(IxiaIxnetworkControllerShell2GDriver, self).keep_alive(context, cancellation_context)
-
-
-if __name__ == "__main__":
-    import mock
-    from cloudshell.shell.core.driver_context import ResourceCommandContext, ResourceContextDetails, ReservationContextDetails
-
-    address = '192.168.85.41'
-
-    port = 8888
-    auth_key = 'h8WRxvHoWkmH8rLQz+Z/pg=='
-    api_port = 8029
-
-    context = ResourceCommandContext(*(None, ) * 4)
-    context.resource = ResourceContextDetails(*(None, ) * 13)
-    context.resource.name = "IxNetwork"
-    context.resource.fullname = "IxNetwork"
-    context.reservation = ReservationContextDetails(*(None, ) * 7)
-    context.resource.attributes = {}
-
-    for attr, value in [("Address", address),
-                        ("Controller TCP Port", port)]:
-        context.resource.attributes["{}.{}".format(IxiaIxnetworkControllerShell2GDriver.SHELL_NAME, attr)] = value
-
-    context.resource.address = address
-
-    context.connectivity = mock.MagicMock()
-    context.connectivity.server_address = "192.168.85.14"
-
-    dr = IxiaIxnetworkControllerShell2GDriver()
-    dr.initialize(context)
-
-    out = dr.load_config(context, "C:\conf.ixncfg")
-    # out = dr.keep_alive(context, mock.MagicMock())
-    # out = dr.start_traffic(context)
-    # out = dr.stop_traffic(context)
-    # out = dr.get_results(context)
-    # out = dr.cleanup_reservation(context)

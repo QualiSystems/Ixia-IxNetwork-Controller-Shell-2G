@@ -3,7 +3,7 @@ tosca_definitions_version: tosca_simple_yaml_1_0
 metadata:
   template_name: Ixia IxNetwork Controller Shell 2G
   template_author: Anonymous
-  template_version: 0.1.0
+  template_version: 2.0.0
   template_icon: shell-icon.png
 
 description: >
@@ -14,15 +14,18 @@ imports:
 
 node_types:
 
-  vendor.resource.Ixia IxNetwork Controller Shell 2G:
+  vendor.resource.IxNetwork Controller Shell 2G:
     derived_from: cloudshell.nodes.TrafficGeneratorController
     capabilities:
       concurrent_execution:
         type: cloudshell.capabilities.SupportConcurrentCommands
+    properties:
+      License Server:
+        type: string
     artifacts:
       icon:
         file: shell-icon.png
         type: tosca.artifacts.File
       driver:
-        file: IxiaIxnetworkControllerShell2GDriver.zip
+        file: IxNetworkControllerShell2GDriver.zip
         type: tosca.artifacts.File

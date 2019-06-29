@@ -3,7 +3,6 @@ import csv
 import io
 
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
-from cloudshell.traffic.handler import TrafficHandler
 from cloudshell.traffic.tg_helper import (get_reservation_resources, get_address, is_blocking, attach_stats_csv,
                                           get_family_attribute)
 
@@ -12,27 +11,39 @@ from ixnetwork.ixn_app import init_ixn
 from ixnetwork.ixn_statistics_view import IxnStatisticsView, IxnFlowStatistics
 
 
-class IxnHandler(TrafficHandler):
+class IxnHandler():
 
-    def __init__(self, shell_name=""):
-        super(IxnHandler, self).__init__()
-        self.namespace = "{}.".format(shell_name) if shell_name else ""
+    namespace = 'IxNetwork Controller Shell 2G'
 
     def initialize(self, context, logger):
 
         self.logger = logger
 
-        tcl_server = context.resource.attributes['{}Address'.format(self.namespace)]
-        tcl_port = context.resource.attributes['{}Controller TCP Port'.format(self.namespace)]
+        api_server = context.resource.attributes['{}.Address'.format(self.namespace)]
+        api_port = int(context.resource.attributes['{}.Controller TCP Port'.format(self.namespace)])
 
         self.ixn = init_ixn(ApiType.rest, self.logger)
 
-        if tcl_server.lower() in ('na', ''):
-            tcl_server = 'localhost'
-        if not tcl_port:
-            tcl_port = 11009
-        self.logger.debug("connecting to tcl server {} at {} port".format(tcl_server, tcl_port))
-        self.ixn.connect(tcl_server=tcl_server, tcl_port=tcl_port)
+        if api_server.lower() in ('na', ''):
+            api_server = 'localhost'
+        if not api_port:
+            api_port = 11009
+
+        license_server = None
+        if api_port == 443:
+            user = context.resource.attributes['{}.User'.format(self.namespace)]
+            encripted_password = context.resource.attributes['{}.Password'.format(self.namespace)]
+            password = CloudShellSessionContext(context).get_api().DecryptPassword(encripted_password).Value
+            auth = (user, password)
+            license_server = context.resource.attributes['{}.License Server'.format(self.namespace)]
+            if not license_server:
+                license_server = 'localhost'
+        else:
+            auth = None
+        self.logger.debug("connecting to tcl server {} at {} port with auth {}".format(api_server, api_port, auth))
+        self.ixn.connect(api_server=api_server, api_port=api_port, auth=auth)
+        if license_server:
+            self.ixn.api.set_licensing(licensingServers=[license_server])
 
     def tearDown(self):
         for port in self.ixn.root.get_objects_by_type('vport'):

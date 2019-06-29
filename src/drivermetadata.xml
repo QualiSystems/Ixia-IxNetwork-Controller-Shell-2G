@@ -1,5 +1,5 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxiaIxnetworkControllerShell2GDriver"
-        Name="IxiaIxnetworkControllerShell2GDriver" Version="1.0.0">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxNetworkControllerShell2GDriver"
+        Name="IxNetworkControllerShell2GDriver" Version="1.0.0">
     <Layout>
 
         <Category Name="Hidden Commands">
