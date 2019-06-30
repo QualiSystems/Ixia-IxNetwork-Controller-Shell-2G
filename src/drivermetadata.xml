@@ -1,67 +1,91 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxNetworkControllerShell2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.0.0">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxNetworkControllerShell2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.0.1">
     <Layout>
 
         <Category Name="Hidden Commands">
 
-            <Command Description="API only command to get REST session ID" DisplayName="get_session_id" Name="get_session_id" />
+            <Command Name="get_session_id" DisplayName="get_session_id"
+                     Description="API only command to get REST session ID"/>
 
-            <Command Description="API only command to get list of children" DisplayName="get_children" Name="get_children">
+            <Command Name="get_children" DisplayName="get_children"
+                     Description="API only command to get list of children">
                 <Parameters>
-                    <Parameter Description="Valid object reference" DisplayName="obj_ref" Mandatory="True" Name="obj_ref" Type="String" />
-                    <Parameter Description="Requested children type. If None returns all children" DisplayName="child_type" Mandatory="True" Name="child_type" Type="String" />
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
+                    <Parameter Name="child_type" Type="String" Mandatory="False" DisplayName="child_type"
+                               Description="Requested children type. If None returns all children"/>
                 </Parameters>
             </Command>
 
-            <Command Description="API only command to get object attributes" DisplayName="get_attributes" Name="get_attributes">
+            <Command Name="get_attributes" DisplayName="get_attributes"
+                     Description="API only command to get object attributes">
                 <Parameters>
-                    <Parameter Description="Valid object reference" DisplayName="obj_ref" Mandatory="True" Name="obj_ref" Type="String" />
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
                 </Parameters>
             </Command>
 
-            <Command Description="API only command to set traffic generator object attribute" DisplayName="set_attribute" Name="set_attribute">
+            <Command Name="set_attribute" DisplayName="set_attribute"
+                     Description="API only command to set traffic generator object attribute">
                 <Parameters>
-                    <Parameter Description="Valid object reference" DisplayName="obj_ref" Mandatory="True" Name="obj_ref" Type="String" />
-                    <Parameter Description="Attribute name" DisplayName="attr_name" Mandatory="True" Name="attr_name" Type="String" />
-                    <Parameter Description="Attribute value" DisplayName="attr_value" Mandatory="True" Name="attr_value" Type="String" />
+                    <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
+                               Description="Valid object reference"/>
+                    <Parameter Name="attr_name" Type="String" Mandatory="True" DisplayName="attr_name"
+                               Description="Attribute name"/>
+                    <Parameter Name="attr_value" Type="String" Mandatory="True" DisplayName="attr_value"
+                               Description="Attribute value"/>
                 </Parameters>
             </Command>
 
-            <Command Description="" DisplayName="Cleanup Reservation" EnableCancellation="true" Name="cleanup_reservation" Tags="" />
+            <Command Name="cleanup_reservation" DisplayName="Cleanup Reservation" Tags="" Description=""
+                     EnableCancellation="true"/>
 
-            <Command Description="" Name="cleanup" Tags="" />
+            <Command Name="cleanup" Tags="" Description=""/>
 
-            <Command Description="" DisplayName="Keep Alive" EnableCancellation="true" Name="keep_alive" Tags="" />
+            <Command Name="keep_alive" DisplayName="Keep Alive" Tags="" Description="" EnableCancellation="true"/>
 
         </Category>
 
-        <Command Description="Reserve ports and load configuration" DisplayName="Load Configuration" Name="load_config">
+        <Command Name="load_config" DisplayName="Load Configuration" Description="Reserve ports and load configuration">
             <Parameters>
-                <Parameter Description="Full path to the configuration file" DisplayName="Configuration File Location" Mandatory="True" Name="config_file_location" Type="String" />
+                <Parameter Name="config_file_location" Type="String" Mandatory="True"
+                           DisplayName="Configuration File Location"
+                           Description="Full path to the configuration file"/>
             </Parameters>
         </Command>
 
-        <Command Description="Start traffic on all ports" DisplayName="Start Traffic" Name="start_traffic">
+        <Command Name="start_traffic" DisplayName="Start Traffic" Description="Start traffic on all ports">
             <Parameters>
-                <Parameter AllowedValues="True,False" DefaultValue="False" Description="True - return after traffic finish to run, False - return immediately" DisplayName="Block" Mandatory="False" Name="blocking" Type="Lookup" />
+                <Parameter Name="blocking" Type="Lookup" Mandatory="False" AllowedValues="True,False"
+                           DisplayName="Block"
+                           Description="True - return after traffic finish to run, False - return immediately"
+                           DefaultValue="False"/>
             </Parameters>
         </Command>
 
-        <Command Description="Stop traffic on all ports" DisplayName="Stop Traffic" Name="stop_traffic" />
+        <Command Name="stop_traffic" DisplayName="Stop Traffic" Description="Stop traffic on all ports"/>
 
-        <Command Description="Get real time statistics as sandbox attachment" DisplayName="Get Statistics" Name="get_statistics">
+        <Command Name="get_statistics" DisplayName="Get Statistics"
+                 Description="Get real time statistics as sandbox attachment">
             <Parameters>
-                <Parameter Description="The requested view name, see shell's documentation for details" DisplayName="View Name" Mandatory="True" Name="view_name" Type="String" />
-                <Parameter AllowedValues="csv,json" DefaultValue="csv" Description="CSV or JSON" DisplayName="Output Type" Mandatory="True" Name="output_type" Type="Lookup" />
+                <Parameter Name="view_name" Type="String" Mandatory="True" DisplayName="View Name"
+                           Description="The requested view name, see shell's documentation for details"/>
+                <Parameter Name="output_type" Type="Lookup" Mandatory="True" AllowedValues="csv,json"
+                           DisplayName="Output Type" DefaultValue="csv" Description="CSV or JSON"/>
             </Parameters>
         </Command>
 
-        <Command Description="Send ARP/ND for all protocols" DisplayName="Start ARP/ND" Name="send_arp" />
+        <Command Name="send_arp" DisplayName="Start ARP/ND" Description="Send ARP/ND for all protocols (NA for NGPF)"/>
 
-        <Command Description="Start all protocols" DisplayName="Start Protocols" Name="start_protocols" />
+        <Command Name="start_protocols" DisplayName="Start Devices" Description="Start all protocols"/>
 
-        <Command Description="Stop all protocols" DisplayName="Stop Protocols" Name="stop_protocols" />
+        <Command Name="stop_protocols" DisplayName="Stop Devices" Description="Stop all protocols"/>
 
-        <Command Description="Run quick test" DisplayName="Run Quick Test" Name="run_quick_test" />
+        <Command Name="run_quick_test" DisplayName="Run QuickTest" Description="Run quick test">
+            <Parameters>
+                <Parameter Name="test" Type="String" Mandatory="True" DisplayName="QuickTest Name"
+                           Description="Quick test name"/>
+            </Parameters>
+        </Command>
 
     </Layout>
 </Driver>

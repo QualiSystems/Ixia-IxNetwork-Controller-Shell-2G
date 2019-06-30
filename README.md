@@ -3,9 +3,9 @@
 
 # **Ixia IxNetwork Controller 2G Shell**  
 
-Release date: January 2019
+Release date: June 2019
 
-Shell version: 1.0.0
+Shell version: 2.0.2
 
 Document version: 1.0
 
@@ -55,7 +55,7 @@ Release: **Ixia IxNetwork Controller 2G**
 
 ▪ IxNetwork API Server: 8.0.1 GA and above
 
-▪ IxNetwork Connection Manager: 8.40 EA and above 
+▪ IxNetwork Connection Manager (Windows and Linux): 8.40 EA and above 
 
 ▪ CloudShell version: 8.3 GA Patch 3, 9.0 Patch 2, 9.1 GA and above
 
@@ -74,7 +74,7 @@ For Traffic Generator shells, commands are configured and executed from the cont
 |Start Traffic|Starts L2-3 traffic.<br>Possible values:<br>* **Blocking**:<br>  - **True**: Returns after traffic finishes to run<br>  - **False**: Returns immediately|
 |Stop Traffic|Stops L2-L3 traffic.|
 |Get Statistics|Gets view statistics.<br>Possible values:<br>* **View Name**: **Port statistics**, **Traffic item statistics**, **Flow statistics**, etc.<br>* **Output type**: **CSV**, **JSON**. If **CSV**, the statistics will be attached to the blueprint csv file.|
-|Run Quick Test|Runs Quick test.<br>Set the command inputs as follows:<br>* **Quick Test Name**: Name of quick test to run.|
+|Run Quick Test|Runs Quick test.<br>Set the command inputs as follows:<br>* **QuickTest Name**: Name of quick test to run.|
 
 # Downloading the Shell
 The **Ixia IxNetwork Controller 2G** shell is available from the [Quali Community Integrations](https://community.quali.com/integrations) page. 

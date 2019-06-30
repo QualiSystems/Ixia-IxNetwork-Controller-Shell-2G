@@ -22,7 +22,7 @@ port = '11009'
 controller = '192.168.65.73'
 port = '443'
 
-config='quick_test_ngpf.ixncfg'
+config_version = 'ngpf'
 
 attributes = {'IxNetwork Controller Shell 2G.Address': controller,
               'IxNetwork Controller Shell 2G.Controller TCP Port': port,
@@ -49,16 +49,10 @@ class TestIxNetworkControllerDriver(object):
         pass
 
     def test_load_config(self):
-        reservation_ports = get_reservation_resources(self.session, self.context.reservation.reservation_id,
-                                                      'Generic Traffic Generator Port',
-                                                      'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                      'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
-        set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
-        set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
-        self.driver.load_config(self.context, path.join(path.dirname(__file__), config))
+        self._load_config('test_config')
 
     def test_run_traffic(self):
-        self.test_load_config()
+        self._load_config('test_config')
         self.driver.send_arp(self.context)
         self.driver.start_protocols(self.context)
         import time
@@ -83,13 +77,13 @@ class TestIxNetworkControllerDriver(object):
         set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', '')
         self.assertRaises(Exception, self.driver.load_config, self.context,
-                          path.join(path.dirname(__file__), config))
+                          path.join(path.dirname(__file__), 'test_config'))
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 1')
         self.assertRaises(Exception, self.driver.load_config, self.context,
-                          path.join(path.dirname(__file__), config))
+                          path.join(path.dirname(__file__), 'test_config'))
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port x')
         self.assertRaises(Exception, self.driver.load_config, self.context,
-                          path.join(path.dirname(__file__), config))
+                          path.join(path.dirname(__file__), 'test_config'))
         # cleanup
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
 
@@ -100,5 +94,15 @@ class TestIxNetworkControllerDriver(object):
                                                       'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
         set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
-        self.driver.load_config(self.context, path.join(path.dirname(__file__), config))
+        self.driver.load_config(self.context, path.join(path.dirname(__file__), 'quick_test'))
         print self.driver.run_quick_test(self.context, 'QuickTest1')
+
+    def _load_config(self, config_name):
+        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, config_version))
+        reservation_ports = get_reservation_resources(self.session, self.context.reservation.reservation_id,
+                                                      'Generic Traffic Generator Port',
+                                                      'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
+                                                      'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
+        set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
+        set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
+        self.driver.load_config(self.context, path.join(path.dirname(__file__), config_file))

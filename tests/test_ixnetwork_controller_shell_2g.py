@@ -19,11 +19,11 @@ ports = ['6553/Module1/Port2', '6553/Module1/Port1']
 
 controller = 'localhost'
 port = '11009'
+config_version = 'classic'
 
 controller = '192.168.65.73'
 port = '443'
-
-config='test_config_ngpf.ixncfg'
+config_version = 'ngpf'
 
 attributes = [AttributeNameValue('IxNetwork Controller Shell 2G.Address', controller),
               AttributeNameValue('IxNetwork Controller Shell 2G.Controller TCP Port', port),
@@ -80,10 +80,10 @@ class TestIxNetworkControllerShell(unittest.TestCase):
         print('preferences attributes = {}'.format(prefs_attrs.Output))
 
     def test_load_config(self):
-        self._load_config(path.join(path.dirname(__file__), config))
+        self._load_config(path.join(path.dirname(__file__), 'test_config'))
 
     def test_run_traffic(self):
-        self._load_config(path.join(path.dirname(__file__), config))
+        self._load_config(path.join(path.dirname(__file__), 'test_config'))
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
                                     'send_arp')
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
@@ -98,11 +98,12 @@ class TestIxNetworkControllerShell(unittest.TestCase):
         assert(int(json.loads(stats.Output)['Port 1']['Frames Tx.']) >= 2000)
 
     def test_run_quick_test(self):
-        self._load_config(path.join(path.dirname(__file__), 'quick_tests_840.ixncfg'))
+        self._load_config('quick_test')
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
-                                    'run_quick_test', [InputNameValue('test', 'QuickTest3')])
+                                    'run_quick_test', [InputNameValue('test', 'QuickTest1')])
 
-    def _load_config(self, config):
+    def _load_config(self, config_name):
+        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, config_version))
         reservation_ports = get_reservation_resources(self.session, self.context.reservation.reservation_id,
                                                       'Generic Traffic Generator Port',
                                                       'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
@@ -110,4 +111,4 @@ class TestIxNetworkControllerShell(unittest.TestCase):
         set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
-                                    'load_config', [InputNameValue('config_file_location', config)])
+                                    'load_config', [InputNameValue('config_file_location', config_file)])

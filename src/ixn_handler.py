@@ -126,7 +126,6 @@ class IxnHandler():
             raise Exception('Output type should be CSV/JSON - got "{}"'.format(output_type))
 
     def run_quick_test(self, context, test):
-
         self.ixn.quick_test_apply(test)
         return self.ixn.quick_test_start(test, blocking=True, timeout=3600 * 24)
 
