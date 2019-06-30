@@ -3,8 +3,8 @@
 
 from os import path
 import sys
-import unittest
 import logging
+import time
 
 from cloudshell.traffic.tg_helper import get_reservation_resources, set_family_attribute
 from shellfoundry.releasetools.test_helper import create_session_from_deployment, create_command_context
@@ -55,8 +55,8 @@ class TestIxNetworkControllerDriver(object):
         self._load_config('test_config')
         self.driver.send_arp(self.context)
         self.driver.start_protocols(self.context)
-        import time
         time.sleep(8)
+        self.driver.stop_traffic(self.context)
         self.driver.start_traffic(self.context, 'False')
         self.driver.stop_traffic(self.context)
         stats = self.driver.get_statistics(self.context, 'Port Statistics', 'JSON')

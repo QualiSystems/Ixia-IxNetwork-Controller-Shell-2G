@@ -7,7 +7,7 @@ metadata:
   template_author: Quali
   template_icon: shell-icon.png
   template_name: Ixia IxNetwork Controller Shell 2G
-  template_version: 2.0.2
+  template_version: 2.0.3
 node_types:
   vendor.resource.IxNetwork Controller Shell 2G:
     artifacts:
@@ -23,9 +23,9 @@ node_types:
     derived_from: cloudshell.nodes.TrafficGeneratorController
     properties:
       License Server:
-        type: string
         default: localhost
         description: License server IP address.
         tags:
         - user_input
+        type: string
 tosca_definitions_version: tosca_simple_yaml_1_0

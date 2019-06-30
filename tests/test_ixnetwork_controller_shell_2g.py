@@ -89,9 +89,9 @@ class TestIxNetworkControllerShell(unittest.TestCase):
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
                                     'start_protocols')
         self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
-                                    'start_traffic', [InputNameValue('blocking', 'True')])
-        self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
                                     'stop_traffic')
+        self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
+                                    'start_traffic', [InputNameValue('blocking', 'True')])
         stats = self.session.ExecuteCommand(self.context.reservation.reservation_id, namespace, 'Service',
                                             'get_statistics', [InputNameValue('view_name', 'Port Statistics'),
                                                                InputNameValue('output_type', 'JSON')])
