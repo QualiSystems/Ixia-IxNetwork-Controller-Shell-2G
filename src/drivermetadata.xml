@@ -1,5 +1,4 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxiaIxnetworkControllerShell2GDriver"
-        Name="IxiaIxnetworkControllerShell2GDriver" Version="1.0.0">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxNetworkControllerShell2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.0.1">
     <Layout>
 
         <Category Name="Hidden Commands">
@@ -12,7 +11,7 @@
                 <Parameters>
                     <Parameter Name="obj_ref" Type="String" Mandatory="True" DisplayName="obj_ref"
                                Description="Valid object reference"/>
-                    <Parameter Name="child_type" Type="String" Mandatory="True" DisplayName="child_type"
+                    <Parameter Name="child_type" Type="String" Mandatory="False" DisplayName="child_type"
                                Description="Requested children type. If None returns all children"/>
                 </Parameters>
             </Command>
@@ -75,13 +74,18 @@
             </Parameters>
         </Command>
 
-        <Command Name="send_arp" DisplayName="Start ARP/ND" Description="Send ARP/ND for all protocols"/>
+        <Command Name="send_arp" DisplayName="Start ARP/ND" Description="Send ARP/ND for all protocols (NA for NGPF)"/>
 
-        <Command Name="start_protocols" DisplayName="Start Protocols" Description="Start all protocols"/>
+        <Command Name="start_protocols" DisplayName="Start Devices" Description="Start all protocols"/>
 
-        <Command Name="stop_protocols" DisplayName="Stop Protocols" Description="Stop all protocols"/>
+        <Command Name="stop_protocols" DisplayName="Stop Devices" Description="Stop all protocols"/>
 
-        <Command Name="run_quick_test" DisplayName="Run Quick Test" Description="Run quick test"/>
+        <Command Name="run_quick_test" DisplayName="Run QuickTest" Description="Run quick test">
+            <Parameters>
+                <Parameter Name="test" Type="String" Mandatory="True" DisplayName="QuickTest Name"
+                           Description="Quick test name"/>
+            </Parameters>
+        </Command>
 
     </Layout>
 </Driver>

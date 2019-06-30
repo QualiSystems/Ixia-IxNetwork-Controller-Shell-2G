@@ -1,28 +1,31 @@
-tosca_definitions_version: tosca_simple_yaml_1_0
+description: 'TOSCA based service shell
 
-metadata:
-  template_name: IxiaIxnetworkControllerShell2G
-  template_author: Anonymous
-  template_version: 0.1.0
-  template_icon: shell-icon.png
-
-description: >
-  TOSCA based service shell
-
+  '
 imports:
-  - cloudshell_standard: cloudshell_traffic_generator_controller_standard_2_0_0.yaml
-
+- cloudshell_standard: cloudshell_traffic_generator_controller_standard_2_0_0.yaml
+metadata:
+  template_author: Quali
+  template_icon: shell-icon.png
+  template_name: Ixia IxNetwork Controller Shell 2G
+  template_version: 2.0.2
 node_types:
-
-  vendor.resource.Ixia IxNetwork Controller Shell 2G:
-    derived_from: cloudshell.nodes.TrafficGeneratorController
-    capabilities:
-      concurrent_execution:
-        type: cloudshell.capabilities.SupportConcurrentCommands
+  vendor.resource.IxNetwork Controller Shell 2G:
     artifacts:
+      driver:
+        file: IxNetworkControllerShell2GDriver.zip
+        type: tosca.artifacts.File
       icon:
         file: shell-icon.png
         type: tosca.artifacts.File
-      driver:
-        file: IxiaIxnetworkControllerShell2GDriver.zip
-        type: tosca.artifacts.File
+    capabilities:
+      concurrent_execution:
+        type: cloudshell.capabilities.SupportConcurrentCommands
+    derived_from: cloudshell.nodes.TrafficGeneratorController
+    properties:
+      License Server:
+        type: string
+        default: localhost
+        description: License server IP address.
+        tags:
+        - user_input
+tosca_definitions_version: tosca_simple_yaml_1_0
