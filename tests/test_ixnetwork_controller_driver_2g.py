@@ -1,5 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 from os import path
 import sys
@@ -10,19 +8,14 @@ from cloudshell.traffic.tg_helper import get_reservation_resources, set_family_a
 from shellfoundry.releasetools.test_helper import create_session_from_deployment, create_command_context
 
 from src.driver import IxNetworkControllerShell2GDriver
+import test_ixnetwork_configs
 
+server  = test_ixnetwork_configs.cm_90
 
-ports = ['61/Module1/Port2', '61/Module2/Port1']
-ports = ['207/Module1/Port2', '207/Module2/Port1']
-ports = ['6553/Module1/Port2', '6553/Module1/Port1']
-
-controller = 'localhost'
-port = '11009'
-
-controller = '192.168.65.73'
-port = '443'
-
-config_version = 'ngpf'
+controller = server.split(':')[0]
+port = server.split(':')[1]
+config_version = test_ixnetwork_configs.server_properties[server]['config_version']
+ports = test_ixnetwork_configs.server_properties[server]['ports']
 
 attributes = {'IxNetwork Controller Shell 2G.Address': controller,
               'IxNetwork Controller Shell 2G.Controller TCP Port': port,
@@ -94,7 +87,7 @@ class TestIxNetworkControllerDriver(object):
                                                       'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
         set_family_attribute(self.session, reservation_ports[0], 'Logical Name', 'Port 1')
         set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
-        self.driver.load_config(self.context, path.join(path.dirname(__file__), 'quick_test'))
+        self._load_config(path.join(path.dirname(__file__), 'quick_test'))
         print self.driver.run_quick_test(self.context, 'QuickTest1')
 
     def _load_config(self, config_name):

@@ -54,7 +54,6 @@ class IxNetworkControllerShell2GDriver(TrafficControllerDriver):
         """ Run quick test in blocking mode.
 
         :param test: name of quick test to run
-        :return:
         """
         quick_test_resut = self.handler.run_quick_test(context, test)
         tg_helper.write_to_reservation_out(context, 'Quick test result = ' + quick_test_resut)

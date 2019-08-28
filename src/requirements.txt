@@ -2,4 +2,4 @@ cloudshell-shell-core
 cloudshell-automation-api>=9.1,<9.2
 cloudshell-traffic>=2.0.1
 
-pyixnetwork==1.6.5
+pyixnetwork==1.7.0

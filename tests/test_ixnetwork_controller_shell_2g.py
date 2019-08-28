@@ -1,29 +1,22 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 
 from os import path
-import sys
 import unittest
 import time
 import json
 
 from cloudshell.api.cloudshell_api import AttributeNameValue, InputNameValue
 from cloudshell.traffic.tg_helper import get_reservation_resources, set_family_attribute
+
 from shellfoundry.releasetools.test_helper import create_session_from_deployment, create_command_context
+import test_ixnetwork_configs
+from test_ixnetwork_configs import namespace
 
-namespace = 'IxNetwork Controller Shell 2G'
+server  = test_ixnetwork_configs.cm_90
 
-ports = ['61/Module1/Port1', '61/Module2/Port2']
-ports = ['207/Module1/Port1', '207/Module2/Port2']
-ports = ['6553/Module1/Port2', '6553/Module1/Port1']
-
-controller = 'localhost'
-port = '11009'
-config_version = 'classic'
-
-controller = '192.168.65.73'
-port = '443'
-config_version = 'ngpf'
+controller = server.split(':')[0]
+port = server.split(':')[1]
+config_version = test_ixnetwork_configs.server_properties[server]['config_version']
+ports = test_ixnetwork_configs.server_properties[server]['ports']
 
 attributes = [AttributeNameValue('IxNetwork Controller Shell 2G.Address', controller),
               AttributeNameValue('IxNetwork Controller Shell 2G.Controller TCP Port', port),
