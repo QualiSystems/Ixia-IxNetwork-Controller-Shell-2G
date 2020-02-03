@@ -39,13 +39,6 @@ server_properties = {linux_840: {'ports': ports_840, 'auth': ('admin', 'admin'),
                      windows_900_https: {'ports': ports_900, 'auth': None, 'config_version': 'classic'},
                      cm_900: {'ports': ports_900, 'auth': None, 'config_version': 'classic'}}
 
-server  = windows_900_http
-
-controller = server.split(':')[0]
-port = server.split(':')[1]
-config_version = server_properties[server]['config_version']
-ports = server_properties[server]['ports']
-
 
 @pytest.fixture()
 def model():
@@ -57,10 +50,14 @@ def alias():
     yield 'IxNetwork Controller'
 
 
-@pytest.fixture(params=[(controller, port)],
-                ids=['windows-900'])
-def dut(request):
-    yield request.param
+@pytest.fixture(params=[windows_900_http, linux_900],
+                ids=['windows-900-http', 'linux-900'])
+def server(request):
+    controller_address = request.param.split(':')[0]
+    controller_port = request.param.split(':')[1]
+    config_version = server_properties[request.param]['config_version']
+    ports = server_properties[request.param]['ports']
+    yield controller_address, controller_port, config_version, ports
 
 
 @pytest.fixture()
@@ -69,8 +66,8 @@ def session():
 
 
 @pytest.fixture()
-def driver(session, model, dut):
-    controller_address, controller_port = dut
+def driver(session, model, server):
+    controller_address, controller_port, _, _ = server
     attributes = {model + '.Address': controller_address,
                   model + '.Controller TCP Port': controller_port,
                   model + '.User': 'admin',
@@ -86,8 +83,8 @@ def driver(session, model, dut):
 
 
 @pytest.fixture()
-def context(session, model, alias, dut):
-    controller_address, controller_port = dut
+def context(session, model, alias, server):
+    controller_address, controller_port, _, ports = server
     attributes = [AttributeNameValue(model + '.Address', controller_address),
                   AttributeNameValue(model + '.Controller TCP Port', controller_port),
                   AttributeNameValue(model + '.User', 'admin'),
@@ -95,32 +92,23 @@ def context(session, model, alias, dut):
                   AttributeNameValue(model + '.License Server', '192.168.42.61')]
     context = create_service_command_context(session, model, alias, attributes)
     add_resources_to_reservation(context, *ports)
-    yield context
-    end_reservation(session, get_reservation_id(context))
-
-
-def load_config(context, config_name, driver=None, session=None, alias=None):
-    config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, config_version))
-    reservation_ports = get_resources_from_reservation(context, 'Generic Traffic Generator Port',
+    reservation_ports = get_resources_from_reservation(context,
+                                                       'Generic Traffic Generator Port',
                                                        'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
                                                        'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
     set_family_attribute(context, reservation_ports[0], 'Logical Name', 'Port 1')
     set_family_attribute(context, reservation_ports[1], 'Logical Name', 'Port 2')
-    if driver:
-        driver.load_config(context, path.join(path.dirname(__file__), config_file))
-    else:
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
-                               'load_config',
-                               [InputNameValue('config_file_location', config_file)])
+    yield context
+    end_reservation(session, get_reservation_id(context))
 
 
 class TestIxNetworkControllerDriver(object):
 
-    def test_load_config(self, driver, context):
-        load_config(context, 'test_config', driver=driver)
+    def test_load_config(self, driver, context, server):
+        self._load_config(driver, context, server, 'test_config')
 
-    def test_run_traffic(self, driver, context):
-        load_config(context, 'test_config', driver=driver)
+    def test_run_traffic(self, driver, context, server):
+        self._load_config(driver, context, server, 'test_config')
         driver.send_arp(context)
         driver.start_protocols(context)
         time.sleep(8)
@@ -138,8 +126,8 @@ class TestIxNetworkControllerDriver(object):
         driver.stop_protocols(context)
         print(stats)
 
-    def test_run_quick_test(self, driver, context):
-        load_config(context, 'quick_test', driver=driver)
+    def test_run_quick_test(self, driver, context, server):
+        self._load_config(driver, context, server, 'quick_test')
         quick_test_results = driver.run_quick_test(context, 'QuickTest1')
         print(quick_test_results)
 
@@ -151,16 +139,20 @@ class TestIxNetworkControllerDriver(object):
         assert(len(reservation_ports) == 2)
         set_family_attribute(context, reservation_ports[0], 'Logical Name', 'Port 1')
         set_family_attribute(context, reservation_ports[1], 'Logical Name', '')
-        self.assertRaises(Exception, self.driver.load_config, self.context,
+        self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 1')
-        self.assertRaises(Exception, self.driver.load_config, self.context,
+        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port 1')
+        self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port x')
-        self.assertRaises(Exception, self.driver.load_config, self.context,
+        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port x')
+        self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
         # cleanup
-        set_family_attribute(self.session, reservation_ports[1], 'Logical Name', 'Port 2')
+        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port 2')
+
+    def _load_config(self, driver, context, server, config_name):
+        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))
+        driver.load_config(context, path.join(path.dirname(__file__), config_file))
 
 
 class TestIxNetworkControllerShell(object):
@@ -199,11 +191,11 @@ class TestIxNetworkControllerShell(object):
                                              [InputNameValue('obj_ref', prefs_obj)])
         print('preferences attributes = {}'.format(prefs_attrs.Output))
 
-    def test_load_config(self, session, context, alias):
-        load_config(context, 'test_config', session=session, alias=alias)
+    def test_load_config(self, session, context, alias, server):
+        self._load_config(session, context, alias, server, 'test_config')
 
-    def test_run_traffic(self, session, context, alias):
-        load_config(context, 'test_config', session=session, alias=alias)
+    def test_run_traffic(self, session, context, alias, server):
+        self._load_config(session, context, alias, server, 'test_config')
         session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
                                'send_arp')
         session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
@@ -218,8 +210,14 @@ class TestIxNetworkControllerShell(object):
                                         InputNameValue('output_type', 'JSON')])
         assert(int(json.loads(stats.Output)['Port 1']['Frames Tx.']) >= 2000)
 
-    def test_run_quick_test(self, session, context, alias):
-        load_config(context, 'quick_test', session=session, alias=alias)
+    def test_run_quick_test(self, session, context, alias, server):
+        self._load_config(session, context, alias, server, 'quick_test')
         session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
                                'run_quick_test',
                                [InputNameValue('test', 'QuickTest1')])
+
+    def _load_config(self, session, context, alias, server, config_name):
+        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))
+        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+                               'load_config',
+                               [InputNameValue('config_file_location', config_file)])
