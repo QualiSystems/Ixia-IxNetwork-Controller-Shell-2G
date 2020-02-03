@@ -1,46 +1,39 @@
-from cloudshell.traffic.driver import TrafficControllerDriver
-import cloudshell.traffic.tg_helper as tg_helper
+
+from cloudshell.traffic.tg import TgControllerDriver, write_to_reservation_out
 
 from ixn_handler import IxnHandler
 
 
-class IxNetworkControllerShell2GDriver(TrafficControllerDriver):
+class IxNetworkController2GDriver(TgControllerDriver):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
         self.handler = IxnHandler()
 
     def load_config(self, context, config_file_location):
-        """ Load IxNetwork configuration file and reserve ports.
-
-        :param config_file_location: Full path to IxNetwork configuration file name - ixncfg
-        """
-        super(self.__class__, self).load_config(context)
-        self.handler.load_config(context, config_file_location)
+        return super(self.__class__, self).load_config(context, config_file_location)
 
     def send_arp(self, context):
         """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
-        self.handler.send_arp()
+        return super(self.__class__, self).send_arp(context)
 
     def start_protocols(self, context):
         """ Start all protocols (classic and ngpf) on all ports. """
-        self.handler.start_protocols()
+        return super(self.__class__, self).start_protocols(context)
 
     def stop_protocols(self, context):
         """ Stop all protocols (classic and ngpf) on all ports. """
-        self.handler.stop_protocols()
+        return super(self.__class__, self).stop_protocols(context)
 
     def start_traffic(self, context, blocking):
         """ Start traffic on all ports.
 
         :param blocking: True - return after traffic finish to run, False - return immediately.
         """
-        self.handler.start_traffic(blocking)
-        return 'traffic started in {} mode'.format(blocking)
+        return super(self.__class__, self).start_traffic(context, blocking)
 
     def stop_traffic(self, context):
         """ Stop traffic on all ports. """
-        self.handler.stop_traffic()
+        return super(self.__class__, self).stop_traffic(context)
 
     def get_statistics(self, context, view_name, output_type):
         """ Get view statistics.
@@ -48,16 +41,16 @@ class IxNetworkControllerShell2GDriver(TrafficControllerDriver):
         :param view_name: port, traffic item, flow group etc.
         :param output_type: CSV or JSON.
         """
-        return self.handler.get_statistics(context, view_name, output_type)
+        return super(self.__class__, self).get_statistics(context, view_name, output_type)
 
     def run_quick_test(self, context, test):
         """ Run quick test in blocking mode.
 
         :param test: name of quick test to run
         """
-        quick_test_resut = self.handler.run_quick_test(context, test)
-        tg_helper.write_to_reservation_out(context, 'Quick test result = ' + quick_test_resut)
-        return quick_test_resut
+        quick_test_results = self.handler.run_quick_test(context, test)
+        write_to_reservation_out(context, 'Quick test result = ' + quick_test_results)
+        return quick_test_results
 
     #
     # Parent commands are not visible so we re define them in child.
@@ -68,9 +61,6 @@ class IxNetworkControllerShell2GDriver(TrafficControllerDriver):
 
     def cleanup(self):
         super(self.__class__, self).cleanup()
-
-    def cleanup_reservation(self, context):
-        pass
 
     def keep_alive(self, context, cancellation_context):
         super(self.__class__, self).keep_alive(context, cancellation_context)

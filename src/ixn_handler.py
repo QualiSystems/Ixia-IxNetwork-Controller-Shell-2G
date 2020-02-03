@@ -2,50 +2,40 @@ import json
 import csv
 import io
 
-from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
-from cloudshell.traffic.tg_helper import (get_reservation_resources, get_address, is_blocking, attach_stats_csv,
-                                          get_family_attribute)
+from cloudshell.traffic.tg_helper import (get_address, is_blocking, get_family_attribute)
+from cloudshell.traffic.common import get_resources_from_reservation
+from cloudshell.traffic.tg import TgControllerHandler, attach_stats_csv
 
 from trafficgenerator.tgn_utils import ApiType
 from ixnetwork.ixn_app import init_ixn
 from ixnetwork.ixn_statistics_view import IxnStatisticsView, IxnFlowStatistics
 
+from ixia_data_model import IxNetwork_Controller_Shell_2G
 
-class IxnHandler():
 
-    namespace = 'IxNetwork Controller Shell 2G'
+class IxnHandler(TgControllerHandler):
 
     def initialize(self, context, logger):
 
-        self.logger = logger
-
-        api_server = context.resource.attributes['{}.Address'.format(self.namespace)]
-        api_port = int(context.resource.attributes['{}.Controller TCP Port'.format(self.namespace)])
+        service = IxNetwork_Controller_Shell_2G.create_from_context(context)
+        super(self.__class__, self).initialize(context, logger, service)
 
         self.ixn = init_ixn(ApiType.rest, self.logger)
 
-        if api_server.lower() in ('na', ''):
-            api_server = 'localhost'
-        if not api_port:
-            api_port = 11009
-
-        license_server = None
-        if api_port == 443:
-            user = context.resource.attributes['{}.User'.format(self.namespace)]
-            encripted_password = context.resource.attributes['{}.Password'.format(self.namespace)]
-            password = CloudShellSessionContext(context).get_api().DecryptPassword(encripted_password).Value
-            auth = (user, password)
-            license_server = context.resource.attributes['{}.License Server'.format(self.namespace)]
-            if not license_server:
-                license_server = 'localhost'
+        api_server = self.address if self.address else 'localhost'
+        api_port = self.service.controller_tcp_port if self.service.controller_tcp_port else '11009'
+        if api_port == '443':
+            auth = (self.user, self.password)
+            if not self.service.license_server:
+                self.service.license_server = 'localhost'
         else:
             auth = None
-        self.logger.debug("connecting to tcl server {} at {} port with auth {}".format(api_server, api_port, auth))
-        self.ixn.connect(api_server=api_server, api_port=api_port, auth=auth)
-        if license_server:
-            self.ixn.api.set_licensing(licensingServers=[license_server])
+        self.logger.debug('Connecting to tcl server {} at {} port with auth {}'.format(api_server, api_port, auth))
+        self.ixn.connect(api_server=api_server, api_port=int(api_port), auth=auth)
+        if self.service.license_server:
+            self.ixn.api.set_licensing(licensingServers=[self.service.license_server])
 
-    def tearDown(self):
+    def cleanup(self):
         for port in self.ixn.root.get_objects_by_type('vport'):
             port.release()
         self.ixn.disconnect()
@@ -58,15 +48,12 @@ class IxnHandler():
         for port in config_ports:
             port.release()
 
-        reservation_id = context.reservation.reservation_id
-        my_api = CloudShellSessionContext(context).get_api()
-
         reservation_ports = {}
-        for port in get_reservation_resources(my_api, reservation_id,
-                                              'Generic Traffic Generator Port',
-                                              'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                              'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort'):
-            reservation_ports[get_family_attribute(my_api, port, 'Logical Name').Value.strip()] = port
+        for port in  get_resources_from_reservation(context,
+                                                    'Generic Traffic Generator Port',
+                                                    'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
+                                                    'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort'):
+            reservation_ports[get_family_attribute(context, port, 'Logical Name').Value.strip()] = port
 
         for port in config_ports:
             name = port.obj_name()

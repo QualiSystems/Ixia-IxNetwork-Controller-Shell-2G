@@ -1,4 +1,4 @@
-<Driver Description="Describe the purpose of your CloudShell shell" MainClass="driver.IxNetworkControllerShell2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.1.0">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="ixia_driver.IxNetworkController2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.1.0">
     <Layout>
 
         <Category Name="Hidden Commands">
