@@ -96,8 +96,8 @@ def context(session, model, alias, server):
                                                        'Generic Traffic Generator Port',
                                                        'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
                                                        'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
-    set_family_attribute(context, reservation_ports[0], 'Logical Name', 'Port 1')
-    set_family_attribute(context, reservation_ports[1], 'Logical Name', 'Port 2')
+    set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
+    set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 2')
     yield context
     end_reservation(session, get_reservation_id(context))
 
@@ -137,18 +137,18 @@ class TestIxNetworkControllerDriver(object):
                                                            'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
                                                            'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
         assert(len(reservation_ports) == 2)
-        set_family_attribute(context, reservation_ports[0], 'Logical Name', 'Port 1')
-        set_family_attribute(context, reservation_ports[1], 'Logical Name', '')
+        set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
+        set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', '')
         self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port 1')
+        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port 1')
         self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port x')
+        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port x')
         self.assertRaises(Exception, driver.load_config, context,
                           path.join(path.dirname(__file__), 'test_config'))
         # cleanup
-        set_family_attribute(session, reservation_ports[1], 'Logical Name', 'Port 2')
+        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port 2')
 
     def _load_config(self, driver, context, server, config_name):
         config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))

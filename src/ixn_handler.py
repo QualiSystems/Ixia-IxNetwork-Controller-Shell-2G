@@ -53,7 +53,7 @@ class IxnHandler(TgControllerHandler):
                                                     'Generic Traffic Generator Port',
                                                     'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
                                                     'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort'):
-            reservation_ports[get_family_attribute(context, port, 'Logical Name').Value.strip()] = port
+            reservation_ports[get_family_attribute(context, port.Name, 'Logical Name').strip()] = port
 
         for port in config_ports:
             name = port.obj_name()
@@ -81,7 +81,7 @@ class IxnHandler(TgControllerHandler):
     def stop_protocols(self):
         self.ixn.protocols_stop()
 
-    def start_traffic(self, blocking):
+    def start_traffic(self, context, blocking):
         self.ixn.regenerate()
         self.ixn.traffic_apply()
         self.ixn.l23_traffic_start(is_blocking(blocking))
