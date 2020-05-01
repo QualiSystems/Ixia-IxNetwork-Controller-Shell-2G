@@ -10,7 +10,7 @@ from trafficgenerator.tgn_utils import ApiType
 from ixnetwork.ixn_app import init_ixn
 from ixnetwork.ixn_statistics_view import IxnStatisticsView, IxnFlowStatistics
 
-from ixia_data_model import IxNetwork_Controller_Shell_2G
+from ixn_data_model import IxNetwork_Controller_Shell_2G
 
 
 class IxnHandler(TgControllerHandler):
@@ -52,7 +52,8 @@ class IxnHandler(TgControllerHandler):
         for port in  get_resources_from_reservation(context,
                                                     'Generic Traffic Generator Port',
                                                     'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                    'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort'):
+                                                    'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort',
+                                                    'IxVM Virtual Traffic Chassis 2G.VirtualTrafficGeneratorPort'):
             reservation_ports[get_family_attribute(context, port.Name, 'Logical Name').strip()] = port
 
         for port in config_ports:

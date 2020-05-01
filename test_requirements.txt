@@ -1,2 +1,4 @@
+-r src/requirements.txt
+
 pytest
 GitPython

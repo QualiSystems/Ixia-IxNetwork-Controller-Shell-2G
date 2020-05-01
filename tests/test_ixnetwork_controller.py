@@ -11,7 +11,7 @@ from cloudshell.traffic.tg import IXNETWORK_CONTROLLER_MODEL
 from shellfoundry.releasetools.test_helper import (create_init_command_context, create_session_from_deployment,
                                                    create_service_command_context, end_reservation)
 
-from src.ixia_driver import IxNetworkController2GDriver
+from src.ixn_driver import IxNetworkController2GDriver
 
 ports_840 = ['IxVM 8.40 1/Module1/Port2', 'IxVM 8.40 2/Module1/Port1']
 ports_850 = ['ixia-850-1/Module1/Port2', 'ixia-850-1/Module1/Port1']

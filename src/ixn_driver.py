@@ -10,6 +10,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         self.handler = IxnHandler()
 
     def load_config(self, context, config_file_location):
+        """ Load configuration and reserve ports. """
         return super(self.__class__, self).load_config(context, config_file_location)
 
     def send_arp(self, context):

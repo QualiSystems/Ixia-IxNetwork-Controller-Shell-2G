@@ -1,12 +1,11 @@
-description: 'TOSCA based IxNetwork Controller shell'
-
+description: TOSCA based IxNetwork Controller shell
 imports:
 - cloudshell_standard: cloudshell_traffic_generator_controller_standard_2_0_0.yaml
 metadata:
   template_author: Quali
   template_icon: shell-icon.png
   template_name: Ixia IxNetwork Controller Shell 2G
-  template_version: 2.2.0
+  template_version: 2.2.2
 node_types:
   vendor.resource.IxNetwork Controller Shell 2G:
     artifacts:
