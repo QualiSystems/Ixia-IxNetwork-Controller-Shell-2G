@@ -1,6 +1,6 @@
-cloudshell-orch-core>=2.0.0.0,<2.2.0.0
-cloudshell-shell-core>=4,<5
-cloudshell-automation-api>=9.1,<9.2
-cloudshell-traffic==3.0.3
+cloudshell-orch-core>=3,<3.2
+cloudshell-shell-core>=5,<6
+cloudshell-automation-api>=9.3,<9.4
+cloudshell-traffic==3.1.0
 
-pyixnetwork==1.7.1
+pyixnetwork==3.0.0

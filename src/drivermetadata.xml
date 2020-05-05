@@ -1,4 +1,4 @@
-<Driver Description="IxNetowrk CloudShell shell" MainClass="ixn_driver.IxNetworkController2GDriver" Name="IxNetworkControllerShell2GDriver" Version="2.2.2">
+<Driver Description="Describe the purpose of your CloudShell shell" MainClass="ixia_driver.IxNetworkController2GDriver" Name="IxNetworkControllerShell2GDriver" Version="3.0.0" PythonVersion="3">
     <Layout>
 
         <Category Name="Hidden Commands">
