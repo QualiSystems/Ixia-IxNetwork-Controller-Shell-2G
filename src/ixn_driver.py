@@ -49,9 +49,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
         :param test: name of quick test to run
         """
-        quick_test_results = self.handler.run_quick_test(context, test)
-        write_to_reservation_out(context, 'Quick test result = ' + quick_test_results)
-        return quick_test_results
+        return self.handler.run_quick_test(context, test)
 
     #
     # Parent commands are not visible so we re define them in child.

@@ -5,9 +5,12 @@
 
 Release date: June 2019
 
-Shell version: 2.2.0
+Shell version: 3.0.0
 
 Document version: 1.0
+
+**Important Note: shell versions >= 3.0.0 requires python3 which was introduced in CS 9.3.
+If you are using CloudShell < 9.3 please use [IxNetwork controller shell version 2.2.0](https://github.com/QualiSystems/Ixia-IxNetwork-Controller-Shell-2G/releases/tag/2.2.0-Preview).**
 
 # In This Guide
 

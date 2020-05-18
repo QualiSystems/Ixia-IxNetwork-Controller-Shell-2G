@@ -103,7 +103,7 @@ class IxnHandler(TgControllerHandler):
             statistics_str = json.dumps(statistics, indent=4, sort_keys=True, ensure_ascii=False)
             return json.loads(statistics_str)
         elif output_type.lower().strip() == 'csv':
-            output = io.BytesIO()
+            output = io.StringIO()
             w = csv.DictWriter(output, stats_obj.captions)
             w.writeheader()
             for obj_name in statistics:
@@ -115,7 +115,10 @@ class IxnHandler(TgControllerHandler):
 
     def run_quick_test(self, context, test):
         self.ixn.quick_test_apply(test)
-        return self.ixn.quick_test_start(test, blocking=True, timeout=3600 * 24)
+        self.ixn.quick_test_start(test, blocking=True, timeout=3600 * 24)
+        output = io.BytesIO()
+        self.ixn.root.quick_tests[test].get_report(output)
+        attach_stats_csv(context, self.logger, 'quick_test', output.getvalue().strip(), suffix='pdf')
 
     def get_session_id(self):
         return self.ixn.api.session

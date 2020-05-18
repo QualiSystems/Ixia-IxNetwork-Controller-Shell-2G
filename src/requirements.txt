@@ -1,6 +1,7 @@
-cloudshell-orch-core>=3,<3.2
-cloudshell-shell-core>=5,<6
+cloudshell-orch-core<3.2.0.0,>=3.1.0.0
+cloudshell-shell-core>=5.0.3,<6.0.0
 cloudshell-automation-api>=9.3,<9.4
 cloudshell-traffic==3.1.0
 
+pytrafficgen==3.0.0
 pyixnetwork==3.0.0

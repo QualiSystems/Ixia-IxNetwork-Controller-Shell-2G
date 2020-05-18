@@ -19,13 +19,13 @@ ports_900 = ['ixia-900-1/Module1/Port2', 'ixia-900-1/Module1/Port1']
 
 linux_840 = '192.168.65.27:443'
 linux_850 = '192.168.65.73:443'
-linux_900 = '192.168.65.55:443'
+linux_900 = '192.168.65.23:443'
 
 windows_801 = '192.168.65.39:11009'
 windows_840 = '192.168.65.68:11009'
 windows_850 = '192.168.65.94:11009'
 windows_900_http = 'localhost:11009'
-windows_900_https = '192.168.65.25:11009'
+windows_900_https = 'localhost:11009'
 
 cm_900 = '192.168.42.199:443'
 
@@ -50,8 +50,9 @@ def alias():
     yield 'IxNetwork Controller'
 
 
-@pytest.fixture(params=[windows_900_http, linux_900],
-                ids=['windows-900-http', 'linux-900'])
+# @pytest.fixture(params=[windows_900_http, linux_900],
+#                 ids=['windows-900-http', 'linux-900'])
+@pytest.fixture(params=[windows_900_http])
 def server(request):
     controller_address = request.param.split(':')[0]
     controller_port = request.param.split(':')[1]
@@ -131,7 +132,7 @@ class TestIxNetworkControllerDriver(object):
         quick_test_results = driver.run_quick_test(context, 'QuickTest1')
         print(quick_test_results)
 
-    def negative_tests(self, driver, context):
+    def test_negative(self, driver, context):
         reservation_ports = get_resources_from_reservation(context,
                                                            'Generic Traffic Generator Port',
                                                            'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
@@ -139,16 +140,16 @@ class TestIxNetworkControllerDriver(object):
         assert(len(reservation_ports) == 2)
         set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
         set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', '')
-        self.assertRaises(Exception, driver.load_config, context,
-                          path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port 1')
-        self.assertRaises(Exception, driver.load_config, context,
-                          path.join(path.dirname(__file__), 'test_config'))
-        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port x')
-        self.assertRaises(Exception, driver.load_config, context,
-                          path.join(path.dirname(__file__), 'test_config'))
+        with pytest.raises(Exception):
+            driver.load_config(context, path.join(path.dirname(__file__), 'test_config'))
+        set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 1')
+        with pytest.raises(Exception):
+            driver.load_config(context, path.join(path.dirname(__file__), 'test_config'))
+        set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port x')
+        with pytest.raises(Exception):
+            driver.load_config(context, path.join(path.dirname(__file__), 'test_config'))
         # cleanup
-        set_family_attribute(session, reservation_ports[1].Name, 'Logical Name', 'Port 2')
+        set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 2')
 
     def _load_config(self, driver, context, server, config_name):
         config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))
@@ -208,7 +209,7 @@ class TestIxNetworkControllerShell(object):
                                        'get_statistics',
                                        [InputNameValue('view_name', 'Port Statistics'),
                                         InputNameValue('output_type', 'JSON')])
-        assert(int(json.loads(stats.Output)['Port 1']['Frames Tx.']) >= 2000)
+        assert int(json.loads(stats.Output)['Port 1']['Frames Tx.']) >= 2000
 
     def test_run_quick_test(self, session, context, alias, server):
         self._load_config(session, context, alias, server, 'quick_test')
