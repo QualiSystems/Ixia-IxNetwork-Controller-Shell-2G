@@ -11,30 +11,30 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
     def load_config(self, context, config_file_location):
         """ Load configuration and reserve ports. """
-        return super(self.__class__, self).load_config(context, config_file_location)
+        return super().load_config(context, config_file_location)
 
     def send_arp(self, context):
         """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
-        return super(self.__class__, self).send_arp(context)
+        return super().send_arp(context)
 
     def start_protocols(self, context):
         """ Start all protocols (classic and ngpf) on all ports. """
-        return super(self.__class__, self).start_protocols(context)
+        return super().start_protocols(context)
 
     def stop_protocols(self, context):
         """ Stop all protocols (classic and ngpf) on all ports. """
-        return super(self.__class__, self).stop_protocols(context)
+        return super().stop_protocols(context)
 
     def start_traffic(self, context, blocking):
         """ Start traffic on all ports.
 
         :param blocking: True - return after traffic finish to run, False - return immediately.
         """
-        return super(self.__class__, self).start_traffic(context, blocking)
+        return super().start_traffic(context, blocking)
 
     def stop_traffic(self, context):
         """ Stop traffic on all ports. """
-        return super(self.__class__, self).stop_traffic(context)
+        return super().stop_traffic(context)
 
     def get_statistics(self, context, view_name, output_type):
         """ Get view statistics.
@@ -42,7 +42,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         :param view_name: port, traffic item, flow group etc.
         :param output_type: CSV or JSON.
         """
-        return super(self.__class__, self).get_statistics(context, view_name, output_type)
+        return super().get_statistics(context, view_name, output_type)
 
     def run_quick_test(self, context, test):
         """ Run quick test in blocking mode.
@@ -56,13 +56,13 @@ class IxNetworkController2GDriver(TgControllerDriver):
     #
 
     def initialize(self, context):
-        super(self.__class__, self).initialize(context)
+        super().initialize(context)
 
     def cleanup(self):
-        super(self.__class__, self).cleanup()
+        super().cleanup()
 
     def keep_alive(self, context, cancellation_context):
-        super(self.__class__, self).keep_alive(context, cancellation_context)
+        super().keep_alive(context, cancellation_context)
 
     #
     # Hidden commands for developers only.

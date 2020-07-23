@@ -2,7 +2,7 @@
 <properties>
 
     <!-- The address of the Quali server on which to deploy, mandatory -->
-    <serverRootAddress>localhost</serverRootAddress>
+    <serverRootAddress>192.168.15.25</serverRootAddress>
 
     <!-- The port of the Quali server on which to deploy, defaults to "8029" -->
     <port>8029</port>

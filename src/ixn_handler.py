@@ -1,12 +1,11 @@
-import json
 import csv
 import io
+import json
 
-from cloudshell.traffic.tg_helper import (get_address, is_blocking, get_family_attribute)
-from cloudshell.traffic.common import get_resources_from_reservation
-from cloudshell.traffic.tg import TgControllerHandler, attach_stats_csv
+from cloudshell.traffic.helpers import get_location, get_family_attribute, get_resources_from_reservation
+from cloudshell.traffic.tg import TgControllerHandler, attach_stats_csv, is_blocking
 
-from trafficgenerator.tgn_utils import ApiType
+from trafficgenerator.tgn_utils import ApiType, TgnError
 from ixnetwork.ixn_app import init_ixn
 from ixnetwork.ixn_statistics_view import IxnStatisticsView, IxnFlowStatistics
 
@@ -18,7 +17,7 @@ class IxnHandler(TgControllerHandler):
     def initialize(self, context, logger):
 
         service = IxNetwork_Controller_Shell_2G.create_from_context(context)
-        super(self.__class__, self).initialize(context, logger, service)
+        super().initialize(context, logger, service)
 
         self.ixn = init_ixn(ApiType.rest, self.logger)
 
@@ -59,14 +58,11 @@ class IxnHandler(TgControllerHandler):
         for port in config_ports:
             name = port.obj_name()
             if name in reservation_ports:
-                address = get_address(reservation_ports[name])
-                self.logger.debug('Logical Port {} will be reserved on Physical location {}'.format(name, address))
-                port.reserve(address, wait_for_up=False)
+                location = get_location(reservation_ports[name])
+                self.logger.info(f'Logical Port {name} will be reserved on Physical location {location}')
+                port.reserve(location, wait_for_up=False)
             else:
-                self.logger.error('Configuration port "{}" not found in reservation ports {}'.
-                                  format(port, reservation_ports.keys()))
-                raise Exception('Configuration port "{}" not found in reservation ports {}'.
-                                format(port, reservation_ports.keys()))
+                raise TgnError(f'Configuration port "{port}" not found in reservation ports {reservation_ports.keys()}')
 
         for port in config_ports:
             port.wait_for_states(40, 'up')
@@ -111,7 +107,7 @@ class IxnHandler(TgControllerHandler):
             attach_stats_csv(context, self.logger, view_name, output.getvalue().strip())
             return output.getvalue().strip()
         else:
-            raise Exception('Output type should be CSV/JSON - got "{}"'.format(output_type))
+            raise TgnError(f'Output type should be CSV/JSON - got "{output_type}"')
 
     def run_quick_test(self, context, test):
         self.ixn.quick_test_apply(test)
