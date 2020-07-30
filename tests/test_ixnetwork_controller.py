@@ -45,7 +45,7 @@ def alias():
 
 # @pytest.fixture(params=[windows_900_http, linux_900],
 #                 ids=['windows-900-http', 'linux-900'])
-@pytest.fixture(params=[linux_900])
+@pytest.fixture(params=[windows_900])
 def server(request):
     controller_address = request.param.split(':')[0]
     controller_port = request.param.split(':')[1]
@@ -113,7 +113,7 @@ class TestIxNetworkControllerDriver:
         assert(int(stats['Port 1']['Frames Tx.']) >= 200)
         assert(int(stats['Port 1']['Frames Tx.']) <= 1800)
         driver.start_traffic(context, 'True')
-        time.sleep(2)
+        time.sleep(4)
         stats = driver.get_statistics(context, 'Port Statistics', 'JSON')
         assert(int(stats['Port 1']['Frames Tx.']) >= 2000)
         stats = driver.get_statistics(context, 'Port Statistics', 'csv')

@@ -91,7 +91,7 @@ class IxnHandler(TgControllerHandler):
         if view_name == 'Flow Statistics':
             stats_obj = IxnFlowStatistics(self.ixn.root)
         else:
-            stats_obj = IxnStatisticsView(self.ixn.root, view_name)
+            stats_obj = IxnStatisticsView(view_name)
 
         stats_obj.read_stats()
         statistics = stats_obj.get_all_stats()
