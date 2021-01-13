@@ -21,7 +21,7 @@ class IxnHandler(TgControllerHandler):
 
         self.ixn = init_ixn(ApiType.rest, self.logger)
 
-        api_server = self.address if self.address else 'localhost'
+        api_server = self.service.address if self.service.address else 'localhost'
         api_port = self.service.controller_tcp_port if self.service.controller_tcp_port else '11009'
         if api_port == '443':
             auth = (self.user, self.password)
@@ -29,30 +29,30 @@ class IxnHandler(TgControllerHandler):
                 self.service.license_server = 'localhost'
         else:
             auth = None
-        self.logger.debug('Connecting to tcl server {} at {} port with auth {}'.format(api_server, api_port, auth))
+        self.logger.debug(f'Connecting to API server {api_server} at {api_port} port with auth {auth}')
         self.ixn.connect(api_server=api_server, api_port=int(api_port), auth=auth)
         if self.service.license_server:
             self.ixn.api.set_licensing(licensingServers=[self.service.license_server])
 
     def cleanup(self):
-        for port in self.ixn.root.get_objects_by_type('vport'):
+        for port in self.ixn.root.ports.values():
             port.release()
         self.ixn.disconnect()
 
     def load_config(self, context, ixia_config_file_name):
 
         self.ixn.load_config(ixia_config_file_name)
-        config_ports = self.ixn.root.get_children('vport')
+        config_ports = self.ixn.root.ports.values()
 
         for port in config_ports:
             port.release()
 
         reservation_ports = {}
-        for port in  get_resources_from_reservation(context,
-                                                    'Generic Traffic Generator Port',
-                                                    'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                    'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                    'IxVM Virtual Traffic Chassis 2G.VirtualTrafficGeneratorPort'):
+        for port in get_resources_from_reservation(context,
+                                                   'Generic Traffic Generator Port',
+                                                   'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
+                                                   'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort',
+                                                   'IxVM Virtual Traffic Chassis 2G.VirtualTrafficGeneratorPort'):
             reservation_ports[get_family_attribute(context, port.Name, 'Logical Name').strip()] = port
 
         for port in config_ports:
@@ -67,7 +67,7 @@ class IxnHandler(TgControllerHandler):
         for port in config_ports:
             port.wait_for_states(40, 'up')
 
-        self.logger.info("Port Reservation Completed")
+        self.logger.info('Port Reservation Completed')
 
     def send_arp(self):
         self.ixn.send_arp_ns()
@@ -78,7 +78,7 @@ class IxnHandler(TgControllerHandler):
     def stop_protocols(self):
         self.ixn.protocols_stop()
 
-    def start_traffic(self, context, blocking):
+    def start_traffic(self, _, blocking):
         self.ixn.regenerate()
         self.ixn.traffic_apply()
         self.ixn.l23_traffic_start(is_blocking(blocking))
@@ -89,7 +89,7 @@ class IxnHandler(TgControllerHandler):
     def get_statistics(self, context, view_name, output_type):
 
         if view_name == 'Flow Statistics':
-            stats_obj = IxnFlowStatistics(self.ixn.root)
+            stats_obj = IxnFlowStatistics()
         else:
             stats_obj = IxnStatisticsView(view_name)
 

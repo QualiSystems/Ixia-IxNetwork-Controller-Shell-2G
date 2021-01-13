@@ -1,74 +1,94 @@
-
-from os import path
-import time
-import pytest
+"""
+Test IxNetworkController2GDriver.
+"""
 import json
+import time
+from os import path
 
-from cloudshell.api.cloudshell_api import AttributeNameValue, InputNameValue
-from cloudshell.traffic.helpers import (set_family_attribute, get_reservation_id, get_resources_from_reservation,
-                                        add_resources_to_reservation)
-from cloudshell.traffic.tg import IXNETWORK_CONTROLLER_MODEL
-from shellfoundry.releasetools.test_helper import (create_init_command_context, create_session_from_deployment,
-                                                   create_service_command_context, end_reservation)
+import pytest
+
+from cloudshell.api.cloudshell_api import AttributeNameValue, InputNameValue, CloudShellAPISession
+from cloudshell.shell.core.driver_context import ResourceCommandContext
+from cloudshell.traffic.helpers import set_family_attribute, get_reservation_id, get_resources_from_reservation
+from cloudshell.traffic.tg import IXNETWORK_CONTROLLER_MODEL, IXIA_CHASSIS_MODEL, PERFECT_STORM_CHASSIS_MODEL
+from shellfoundry_traffic.test_helpers import create_session_from_config, TestHelpers
 
 from src.ixn_driver import IxNetworkController2GDriver
 
-ports_840 = ['IxVM 8.40 1/Module1/Port2', 'IxVM 8.40 2/Module1/Port1']
-ports_850 = ['ixia-850-1/Module1/Port2', 'ixia-850-1/Module1/Port1']
-ports_900 = ['ixia-900-1/Module1/Port2', 'ixia-900-1/Module1/Port1']
 
-linux_840 = '192.168.65.27:443'
-linux_850 = '192.168.65.73:443'
-linux_900 = '192.168.65.27:443'
+ALIAS = 'IXN Controller'
 
-windows_801 = '192.168.65.39:11009'
-windows_840 = '192.168.65.68:11009'
-windows_850 = '192.168.65.94:11009'
+chassis_900 = '192.168.65.36'
+chassis_910 = '192.168.65.21'
+
+linux_900 = '192.168.65.34:443'
+linux_910 = '192.168.65.38:443'
+
 windows_900 = 'localhost:11009'
+windows_910 = 'localhost:11009'
 
-cm_900 = '192.168.42.199:443'
+ports_900 = ['ixia-900-1/Module1/Port2', 'ixia-900-1/Module1/Port1']
+ports_910 = ['ixia-910-1/Module1/Port2', 'ixia-910-1/Module1/Port1']
 
 
-server_properties = {linux_840: {'ports': ports_840, 'auth': ('admin', 'admin'), 'config_version': 'ngpf'},
-                     linux_850: {'ports': ports_850, 'auth': ('admin', 'admin'), 'config_version': 'ngpf'},
-                     linux_900: {'ports': ports_900, 'auth': ('admin', 'admin'), 'config_version': 'ngpf'},
-                     windows_840: {'ports': ports_840, 'auth': None, 'config_version': 'classic'},
-                     windows_850: {'ports': ports_850, 'auth': None, 'config_version': 'classic'},
-                     windows_900: {'ports': ports_900, 'auth': None, 'config_version': 'classic'},
-                     cm_900: {'ports': ports_900, 'auth': None, 'config_version': 'classic'}}
+server_properties = {'linux_900': {'server': linux_900, 'ports': ports_900, 'auth': ('admin', 'admin'),
+                                   'config_version': 'ngpf'},
+                     'linux_910': {'server': linux_910, 'ports': ports_910, 'auth': ('admin', 'admin'),
+                                   'config_version': 'ngpf'},
+                     'windows_900': {'server': windows_900, 'ports': ports_900, 'auth': None,
+                                     'config_version': 'classic'},
+                     'windows_900_ngpf': {'server': windows_900, 'ports': ports_900, 'auth': None,
+                                          'config_version': 'ngpf'},
+                     'windows_910': {'server': windows_910, 'ports': ports_910, 'auth': None,
+                                     'config_version': 'classic'},
+                     'windows_910_ngpf': {'server': windows_910, 'ports': ports_910, 'auth': None,
+                                          'config_version': 'ngpf'}}
+
+
+@pytest.fixture(scope='session')
+def session() -> CloudShellAPISession:
+    yield create_session_from_config()
 
 
 @pytest.fixture()
-def alias():
-    yield 'IxNetwork Controller'
+def test_helpers(session: CloudShellAPISession) -> TestHelpers:
+    test_helpers = TestHelpers(session)
+    test_helpers.create_reservation()
+    yield test_helpers
+    test_helpers.end_reservation()
 
 
-# @pytest.fixture(params=[windows_900_http, linux_900],
-#                 ids=['windows-900-http', 'linux-900'])
-@pytest.fixture(params=[windows_900])
-def server(request):
-    controller_address = request.param.split(':')[0]
-    controller_port = request.param.split(':')[1]
+@pytest.fixture(params=['windows_910'])
+def server(request) -> list:
+    controller_address = server_properties[request.param]['server'].split(':')[0]
+    controller_port = server_properties[request.param]['server'].split(':')[1]
     config_version = server_properties[request.param]['config_version']
     ports = server_properties[request.param]['ports']
     yield controller_address, controller_port, config_version, ports
 
 
 @pytest.fixture()
-def session():
-    yield create_session_from_deployment()
+def session() -> CloudShellAPISession:
+    yield create_session_from_config()
 
 
 @pytest.fixture()
-def driver(session, server):
+def test_helpers(session: CloudShellAPISession) -> TestHelpers:
+    test_helpers = TestHelpers(session)
+    test_helpers.create_reservation()
+    yield test_helpers
+    test_helpers.end_reservation()
+
+
+@pytest.fixture()
+def driver(test_helpers: TestHelpers, server: list) -> IxNetworkController2GDriver:
     controller_address, controller_port, _, _ = server
     attributes = {f'{IXNETWORK_CONTROLLER_MODEL}.Address': controller_address,
                   f'{IXNETWORK_CONTROLLER_MODEL}.Controller TCP Port': controller_port,
                   f'{IXNETWORK_CONTROLLER_MODEL}.User': 'admin',
                   f'{IXNETWORK_CONTROLLER_MODEL}.Password': 'DxTbqlSgAVPmrDLlHvJrsA==',
                   f'{IXNETWORK_CONTROLLER_MODEL}.License Server': '192.168.42.61'}
-    init_context = create_init_command_context(session, 'CS_TrafficGeneratorController', IXNETWORK_CONTROLLER_MODEL,
-                                               controller_address, attributes, 'Service')
+    init_context = test_helpers.service_init_command_context(IXNETWORK_CONTROLLER_MODEL, attributes)
     driver = IxNetworkController2GDriver()
     driver.initialize(init_context)
     print(driver.logger.handlers[0].baseFilename)
@@ -77,28 +97,27 @@ def driver(session, server):
 
 
 @pytest.fixture()
-def context(session, alias, server):
+def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: list) -> ResourceCommandContext:
     controller_address, controller_port, _, ports = server
     attributes = [AttributeNameValue(f'{IXNETWORK_CONTROLLER_MODEL}.Address', controller_address),
                   AttributeNameValue(f'{IXNETWORK_CONTROLLER_MODEL}.Controller TCP Port', controller_port),
                   AttributeNameValue(f'{IXNETWORK_CONTROLLER_MODEL}.User', 'admin'),
                   AttributeNameValue(f'{IXNETWORK_CONTROLLER_MODEL}.Password', 'admin'),
                   AttributeNameValue(f'{IXNETWORK_CONTROLLER_MODEL}.License Server', '192.168.42.61')]
-    context = create_service_command_context(session, IXNETWORK_CONTROLLER_MODEL, alias, attributes)
-    add_resources_to_reservation(context, *ports)
-    reservation_ports = get_resources_from_reservation(context,
-                                                       'Generic Traffic Generator Port',
-                                                       'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                       'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
+    session.AddServiceToReservation(test_helpers.reservation_id, IXNETWORK_CONTROLLER_MODEL, ALIAS, attributes)
+    context = test_helpers.resource_command_context(service_name=ALIAS)
+    session.AddResourcesToReservation(test_helpers.reservation_id, ports)
+    reservation_ports = get_resources_from_reservation(context, f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort',
+                                                       f'{PERFECT_STORM_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
     set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
     set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 2')
     yield context
-    end_reservation(session, get_reservation_id(context))
 
 
 class TestIxNetworkControllerDriver:
 
-    def test_load_config(self, driver, context, server):
+    def test_load_config(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext,
+                         server: list) -> None:
         self._load_config(driver, context, server, 'test_config')
 
     def test_run_traffic(self, driver, context, server):
@@ -127,9 +146,8 @@ class TestIxNetworkControllerDriver:
 
     def test_negative(self, driver, context):
         reservation_ports = get_resources_from_reservation(context,
-                                                           'Generic Traffic Generator Port',
-                                                           'PerfectStorm Chassis Shell 2G.GenericTrafficGeneratorPort',
-                                                           'Ixia Chassis Shell 2G.GenericTrafficGeneratorPort')
+                                                           f'{PERFECT_STORM_CHASSIS_MODEL}.GenericTrafficGeneratorPort',
+                                                           f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
         assert(len(reservation_ports) == 2)
         set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
         set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', '')
@@ -145,7 +163,7 @@ class TestIxNetworkControllerDriver:
         set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 2')
 
     def _load_config(self, driver, context, server, config_name):
-        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))
+        config_file = path.join(path.dirname(__file__), f'{config_name}_{server[2]}.ixncfg')
         driver.load_config(context, path.join(path.dirname(__file__), config_file))
 
 
@@ -211,7 +229,7 @@ class TestIxNetworkControllerShell:
                                [InputNameValue('test', 'QuickTest1')])
 
     def _load_config(self, session, context, alias, server, config_name):
-        config_file = path.join(path.dirname(__file__), '{}_{}.ixncfg'.format(config_name, server[2]))
+        config_file = path.join(path.dirname(__file__), f'{config_name}_{server[2]}.ixncfg')
         session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
                                'load_config',
                                [InputNameValue('config_file_location', config_file)])

@@ -3,3 +3,4 @@
 pytest
 PyYAML
 
+shellfoundry_traffic
