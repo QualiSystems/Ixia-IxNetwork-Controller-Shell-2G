@@ -2,6 +2,7 @@ import csv
 import io
 import json
 
+from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.traffic.helpers import get_location, get_family_attribute, get_resources_from_reservation
 from cloudshell.traffic.tg import TgControllerHandler, attach_stats_csv, is_blocking
 
@@ -24,7 +25,9 @@ class IxnHandler(TgControllerHandler):
         api_server = self.service.address if self.service.address else 'localhost'
         api_port = self.service.controller_tcp_port if self.service.controller_tcp_port else '11009'
         if api_port == '443':
-            auth = (self.user, self.password)
+            user = self.service.user
+            password = CloudShellSessionContext(context).get_api().DecryptPassword(self.service.password).Value
+            auth = (user, password)
             if not self.service.license_server:
                 self.service.license_server = 'localhost'
         else:

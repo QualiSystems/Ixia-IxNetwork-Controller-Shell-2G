@@ -18,11 +18,11 @@ from src.ixn_driver import IxNetworkController2GDriver
 
 ALIAS = 'IXN Controller'
 
-chassis_900 = '192.168.65.36'
+chassis_900 = '192.168.65.37'
 chassis_910 = '192.168.65.21'
 
 linux_900 = '192.168.65.34:443'
-linux_910 = '192.168.65.38:443'
+linux_910 = '192.168.65.23:443'
 
 windows_900 = 'localhost:11009'
 windows_910 = 'localhost:11009'
@@ -58,7 +58,7 @@ def test_helpers(session: CloudShellAPISession) -> TestHelpers:
     test_helpers.end_reservation()
 
 
-@pytest.fixture(params=['windows_910'])
+@pytest.fixture(params=['linux_910'])
 def server(request) -> list:
     controller_address = server_properties[request.param]['server'].split(':')[0]
     controller_port = server_properties[request.param]['server'].split(':')[1]
@@ -169,62 +169,61 @@ class TestIxNetworkControllerDriver:
 
 class TestIxNetworkControllerShell:
 
-    def test_session_id(self, session, context, alias):
-        session_id = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
-                                            'get_session_id')
-        print('session_id = {}'.format(session_id.Output[1:-1]))
-        root_obj = '/{}/ixnetwork'.format(session_id.Output[1:-1])
-        print('root_obj = {}'.format(root_obj))
+    def test_session_id(self, session, context):
+        session_id = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service', 'get_session_id')
+        print(f'session_id = {session_id.Output[1:-1]}')
+        root_obj = f'/{session_id.Output[1:-1]}/ixnetwork'
+        print(f'root_obj = {root_obj}')
 
-        globals = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        globals = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                          'get_children',
                                          [InputNameValue('obj_ref', root_obj),
                                           InputNameValue('child_type', 'globals')])
-        print('globals = {}'.format(globals.Output))
+        print(f'globals = {globals.Output}')
         globals_obj = json.loads(globals.Output)[0]
-        prefs = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
-                                       'get_children',
-                                       [InputNameValue('obj_ref', globals_obj),
-                                        InputNameValue('child_type', 'preferences')])
-        print('preferences = {}'.format(prefs.Output))
-        prefs_obj = json.loads(prefs.Output)[0]
-        prefs_attrs = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
-                                             'get_attributes',
-                                             [InputNameValue('obj_ref', prefs_obj)])
-        print('preferences attributes = {}'.format(prefs_attrs.Output))
+        preferences = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
+                                             'get_children',
+                                             [InputNameValue('obj_ref', globals_obj),
+                                              InputNameValue('child_type', 'preferences')])
+        print(f'preferences = {preferences.Output}')
+        preferences_obj = json.loads(preferences.Output)[0]
+        preferences_attrs = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
+                                                   'get_attributes',
+                                                   [InputNameValue('obj_ref', preferences_obj)])
+        print(f'preferences attributes = {preferences_attrs.Output}')
 
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'set_attribute',
-                               [InputNameValue('obj_ref', prefs_obj),
+                               [InputNameValue('obj_ref', preferences_obj),
                                 InputNameValue('attr_name', 'connectPortsOnLoadConfig'),
                                 InputNameValue('attr_value', 'True')])
-        prefs_attrs = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
-                                             'get_attributes',
-                                             [InputNameValue('obj_ref', prefs_obj)])
-        print('preferences attributes = {}'.format(prefs_attrs.Output))
+        preferences_attrs = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
+                                                   'get_attributes',
+                                                   [InputNameValue('obj_ref', preferences_obj)])
+        print(f'preferences attributes = {preferences_attrs.Output}')
 
-    def test_load_config(self, session, context, alias, server):
-        self._load_config(session, context, alias, server, 'test_config')
+    def test_load_config(self, session, context, server):
+        self._load_config(session, context, ALIAS, server, 'test_config')
 
-    def test_run_traffic(self, session, context, alias, server):
-        self._load_config(session, context, alias, server, 'test_config')
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+    def test_run_traffic(self, session, context, server):
+        self._load_config(session, context, ALIAS, server, 'test_config')
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'send_arp')
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'start_protocols')
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'stop_traffic')
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'start_traffic', [InputNameValue('blocking', 'True')])
-        stats = session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+        stats = session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                        'get_statistics',
                                        [InputNameValue('view_name', 'Port Statistics'),
                                         InputNameValue('output_type', 'JSON')])
         assert int(json.loads(stats.Output)['Port 1']['Frames Tx.']) >= 2000
 
-    def test_run_quick_test(self, session, context, alias, server):
-        self._load_config(session, context, alias, server, 'quick_test')
-        session.ExecuteCommand(get_reservation_id(context), alias, 'Service',
+    def test_run_quick_test(self, session, context, server):
+        self._load_config(session, context, ALIAS, server, 'quick_test')
+        session.ExecuteCommand(get_reservation_id(context), ALIAS, 'Service',
                                'run_quick_test',
                                [InputNameValue('test', 'QuickTest1')])
 
