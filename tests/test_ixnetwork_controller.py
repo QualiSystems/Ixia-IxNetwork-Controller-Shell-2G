@@ -6,11 +6,12 @@ import time
 from os import path
 
 import pytest
+from _pytest.fixtures import SubRequest
 
 from cloudshell.api.cloudshell_api import AttributeNameValue, InputNameValue, CloudShellAPISession
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.traffic.helpers import set_family_attribute, get_reservation_id, get_resources_from_reservation
-from cloudshell.traffic.tg import IXNETWORK_CONTROLLER_MODEL, IXIA_CHASSIS_MODEL, PERFECT_STORM_CHASSIS_MODEL
+from cloudshell.traffic.tg import IXNETWORK_CONTROLLER_MODEL, IXIA_CHASSIS_MODEL
 from shellfoundry_traffic.test_helpers import create_session_from_config, TestHelpers
 
 from src.ixn_driver import IxNetworkController2GDriver
@@ -59,7 +60,7 @@ def test_helpers(session: CloudShellAPISession) -> TestHelpers:
 
 
 @pytest.fixture(params=['linux_910'])
-def server(request) -> list:
+def server(request: SubRequest) -> list:
     controller_address = server_properties[request.param]['server'].split(':')[0]
     controller_port = server_properties[request.param]['server'].split(':')[1]
     config_version = server_properties[request.param]['config_version']
@@ -107,8 +108,7 @@ def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: li
     session.AddServiceToReservation(test_helpers.reservation_id, IXNETWORK_CONTROLLER_MODEL, ALIAS, attributes)
     context = test_helpers.resource_command_context(service_name=ALIAS)
     session.AddResourcesToReservation(test_helpers.reservation_id, ports)
-    reservation_ports = get_resources_from_reservation(context, f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort',
-                                                       f'{PERFECT_STORM_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
+    reservation_ports = get_resources_from_reservation(context, f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
     set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
     set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', 'Port 2')
     yield context
@@ -145,9 +145,7 @@ class TestIxNetworkControllerDriver:
         print(quick_test_results)
 
     def test_negative(self, driver, context):
-        reservation_ports = get_resources_from_reservation(context,
-                                                           f'{PERFECT_STORM_CHASSIS_MODEL}.GenericTrafficGeneratorPort',
-                                                           f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
+        reservation_ports = get_resources_from_reservation(context, f'{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort')
         assert(len(reservation_ports) == 2)
         set_family_attribute(context, reservation_ports[0].Name, 'Logical Name', 'Port 1')
         set_family_attribute(context, reservation_ports[1].Name, 'Logical Name', '')
