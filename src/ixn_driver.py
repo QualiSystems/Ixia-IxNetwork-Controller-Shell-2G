@@ -1,11 +1,9 @@
-
-from cloudshell.traffic.tg import TgControllerDriver, write_to_reservation_out
+from cloudshell.traffic.tg import TgControllerDriver
 
 from ixn_handler import IxnHandler
 
 
 class IxNetworkController2GDriver(TgControllerDriver):
-
     def __init__(self):
         self.handler = IxnHandler()
 
@@ -15,18 +13,18 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
     def send_arp(self, context):
         """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
-        return super().send_arp(context)
+        return super().send_arp()
 
     def start_protocols(self, context):
         """ Start all protocols (classic and ngpf) on all ports. """
-        return super().start_protocols(context)
+        return super().start_protocols()
 
     def stop_protocols(self, context):
         """ Stop all protocols (classic and ngpf) on all ports. """
-        return super().stop_protocols(context)
+        return super().stop_protocols()
 
     def start_traffic(self, context, blocking):
-        """ Start traffic on all ports.
+        """Start traffic on all ports.
 
         :param blocking: True - return after traffic finish to run, False - return immediately.
         """
@@ -34,10 +32,10 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
     def stop_traffic(self, context):
         """ Stop traffic on all ports. """
-        return super().stop_traffic(context)
+        return super().stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
-        """ Get view statistics.
+        """Get view statistics.
 
         :param view_name: port, traffic item, flow group etc.
         :param output_type: CSV or JSON.
@@ -45,7 +43,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         return super().get_statistics(context, view_name, output_type)
 
     def run_quick_test(self, context, test):
-        """ Run quick test in blocking mode.
+        """Run quick test in blocking mode.
 
         :param test: name of quick test to run
         """
@@ -69,14 +67,14 @@ class IxNetworkController2GDriver(TgControllerDriver):
     #
 
     def get_session_id(self, context):
-        """ API only command to get REST session ID.
+        """API only command to get REST session ID.
 
         return: session ID
         """
         return self.handler.get_session_id()
 
     def get_children(self, context, obj_ref, child_type):
-        """ API only command to get list of children.
+        """API only command to get list of children.
 
         :param str obj_ref: valid object reference
         :param str child_type: requested children type. If None returns all children
@@ -85,7 +83,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         return self.handler.get_children(obj_ref, child_type)
 
     def get_attributes(self, context, obj_ref):
-        """ API only command to get object attributes.
+        """API only command to get object attributes.
 
         :param str obj_ref: valid object reference
         :return: dict(key, values) of all attributes
@@ -93,7 +91,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         return self.handler.get_attributes(obj_ref)
 
     def set_attribute(self, context, obj_ref, attr_name, attr_value):
-        """ API only command to set traffic generator object attribute.
+        """API only command to set traffic generator object attribute.
 
         :param str obj_ref: valid object reference
         :param str attr_name: attribute name
