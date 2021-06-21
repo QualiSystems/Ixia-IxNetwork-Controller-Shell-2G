@@ -15,15 +15,15 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
     def send_arp(self, context):
         """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
-        return super().send_arp(context)
+        return super().send_arp()
 
     def start_protocols(self, context):
         """ Start all protocols (classic and ngpf) on all ports. """
-        return super().start_protocols(context)
+        return super().start_protocols()
 
     def stop_protocols(self, context):
         """ Stop all protocols (classic and ngpf) on all ports. """
-        return super().stop_protocols(context)
+        return super().stop_protocols()
 
     def start_traffic(self, context, blocking):
         """ Start traffic on all ports.
@@ -34,7 +34,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
 
     def stop_traffic(self, context):
         """ Stop traffic on all ports. """
-        return super().stop_traffic(context)
+        return super().stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
         """ Get view statistics.
