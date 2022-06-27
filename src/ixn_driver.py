@@ -8,19 +8,19 @@ class IxNetworkController2GDriver(TgControllerDriver):
         self.handler = IxnHandler()
 
     def load_config(self, context, config_file_location):
-        """ Load configuration and reserve ports. """
+        """Load configuration and reserve ports."""
         return super().load_config(context, config_file_location)
 
     def send_arp(self, context):
-        """ Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf). """
+        """Send ARP/ND for all interfaces (NA for Linux servers that supports only ngpf)."""
         return super().send_arp()
 
     def start_protocols(self, context):
-        """ Start all protocols (classic and ngpf) on all ports. """
+        """Start all protocols (classic and ngpf) on all ports."""
         return super().start_protocols()
 
     def stop_protocols(self, context):
-        """ Stop all protocols (classic and ngpf) on all ports. """
+        """Stop all protocols (classic and ngpf) on all ports."""
         return super().stop_protocols()
 
     def start_traffic(self, context, blocking):
@@ -31,7 +31,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         return super().start_traffic(context, blocking)
 
     def stop_traffic(self, context):
-        """ Stop traffic on all ports. """
+        """Stop traffic on all ports."""
         return super().stop_traffic()
 
     def get_statistics(self, context, view_name, output_type):
