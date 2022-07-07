@@ -1,6 +1,7 @@
 """
 Test IxNetworkController2GDriver.
 """
+# pylint: disable=redefined-outer-name
 import json
 import time
 from pathlib import Path
@@ -51,6 +52,7 @@ def session() -> CloudShellAPISession:
 
 @pytest.fixture()
 def test_helpers(session: CloudShellAPISession) -> Iterable[TestHelpers]:
+    """Yield initialized TestHelpers object."""
     test_helpers = TestHelpers(session)
     test_helpers.create_reservation()
     yield test_helpers
@@ -59,6 +61,7 @@ def test_helpers(session: CloudShellAPISession) -> Iterable[TestHelpers]:
 
 @pytest.fixture(params=["windows_910_ngpf"])
 def server(request: SubRequest) -> list:
+    """Yield server information."""
     controller_address = server_properties[request.param]["server"].split(":")[0]
     controller_port = server_properties[request.param]["server"].split(":")[1]
     ports = server_properties[request.param]["ports"]
@@ -68,6 +71,7 @@ def server(request: SubRequest) -> list:
 
 @pytest.fixture()
 def driver(test_helpers: TestHelpers, server: list) -> Iterable[IxNetworkController2GDriver]:
+    """Yield initialized IxNetworkController2GDriver."""
     controller_address, controller_port, _, _ = server
     attributes = {
         f"{IXNETWORK_CONTROLLER_MODEL}.Address": controller_address,
@@ -85,6 +89,7 @@ def driver(test_helpers: TestHelpers, server: list) -> Iterable[IxNetworkControl
 
 @pytest.fixture()
 def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: list) -> ResourceCommandContext:
+    """Yield ResourceCommandContext for shell command testing."""
     controller_address, controller_port, ports, _ = server
     attributes = [
         AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.Address", controller_address),
@@ -104,6 +109,20 @@ def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: li
 
 class TestIxNetworkControllerDriver:
     """Test direct driver calls."""
+
+    def test_session_id(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+        session_id = driver.get_session_id(context)
+        root_obj = f"{session_id}ixnetwork"
+        ixn_globals = driver.get_children(context, obj_ref=root_obj, child_type="globals")
+        globals_obj = ixn_globals[0]
+        preferences = driver.get_children(context, obj_ref=globals_obj, child_type="preferences")
+        preferences_obj = preferences[0]
+        driver.set_attribute(context, obj_ref=preferences_obj, attr_name="connectPortsOnLoadConfig", attr_value="False")
+        preferences_attrs = driver.get_attributes(context, obj_ref=preferences_obj)
+        assert preferences_attrs["connectPortsOnLoadConfig"] is False
+        driver.set_attribute(context, obj_ref=preferences_obj, attr_name="connectPortsOnLoadConfig", attr_value="True")
+        preferences_attrs = driver.get_attributes(context, obj_ref=preferences_obj)
+        assert preferences_attrs["connectPortsOnLoadConfig"] is True
 
     def test_load_config(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
         self._load_config(driver, context, server, "test_config")

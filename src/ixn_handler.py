@@ -8,16 +8,10 @@ import logging
 from pathlib import Path
 from typing import Optional, Union
 
-from cloudshell.shell.core.driver_context import ResourceCommandContext
+from cloudshell.shell.core.driver_context import InitCommandContext, ResourceCommandContext
 from cloudshell.shell.core.session.cloudshell_session import CloudShellSessionContext
 from cloudshell.traffic.helpers import get_family_attribute, get_location, get_resources_from_reservation
-from cloudshell.traffic.tg import (
-    IXIA_CHASSIS_MODEL,
-    PERFECT_STORM_CHASSIS_MODEL,
-    TgControllerHandler,
-    attach_stats_csv,
-    is_blocking,
-)
+from cloudshell.traffic.tg import IXIA_CHASSIS_MODEL, PERFECT_STORM_CHASSIS_MODEL, attach_stats_csv, is_blocking
 from ixnetwork.ixn_app import IxnApp, init_ixn
 from ixnetwork.ixn_statistics_view import IxnFlowStatistics, IxnPortStatistics, IxnStatisticsView, IxnTrafficItemStatistics
 from trafficgenerator.tgn_utils import ApiType, TgnError
@@ -30,36 +24,36 @@ IXIA_PORT_MODELS = [
 ]
 
 
-class IxnHandler(TgControllerHandler):
+class IxnHandler:
     """IxNetwork controller shell business logic."""
 
     def __init__(self) -> None:
         """Initialize object variables, actual initialization is performed in initialize method."""
-        super().__init__()
         self.ixn: IxnApp = None
+        self.logger: logging.Logger = None
 
-    def initialize(self, context: ResourceCommandContext, logger: logging.Logger) -> None:
+    def initialize(self, context: InitCommandContext, logger: logging.Logger) -> None:
         """Init IxnApp and connect to IxNetwork API server."""
+        self.logger = logger
 
         service = IxNetwork_Controller_Shell_2G.create_from_context(context)
-        super().initialize(context, logger, service)
 
         self.ixn = init_ixn(ApiType.rest, self.logger)
 
-        api_server = self.service.address if self.service.address else "localhost"
-        api_port = self.service.controller_tcp_port if self.service.controller_tcp_port else "11009"
+        api_server = service.address if service.address else "localhost"
+        api_port = service.controller_tcp_port if service.controller_tcp_port else "11009"
         if api_port == "443":
-            user = self.service.user
-            password = CloudShellSessionContext(context).get_api().DecryptPassword(self.service.password).Value
+            user = service.user
+            password = CloudShellSessionContext(context).get_api().DecryptPassword(service.password).Value
             auth = (user, password)
-            if not self.service.license_server:
-                self.service.license_server = "localhost"
+            if not service.license_server:
+                service.license_server = "localhost"
         else:
             auth = None
         self.logger.debug(f"Connecting to API server {api_server} at {api_port} port with auth {auth}")
         self.ixn.connect(api_server=api_server, api_port=int(api_port), auth=auth)
-        if self.service.license_server:
-            self.ixn.api.set_licensing(licensingServers=[self.service.license_server])
+        if service.license_server:
+            self.ixn.api.set_licensing(licensingServers=[service.license_server])
 
     def cleanup(self) -> None:
         """Release all ports and disconnect from IxNetwork API server."""
@@ -108,7 +102,7 @@ class IxnHandler(TgControllerHandler):
         """Stop all protocols."""
         self.ixn.protocols_stop()
 
-    def start_traffic(self, context: ResourceCommandContext, blocking: str) -> None:
+    def start_traffic(self, blocking: str) -> None:
         """Start traffic on all ports."""
         self.ixn.regenerate()
         self.ixn.traffic_apply()
@@ -136,32 +130,36 @@ class IxnHandler(TgControllerHandler):
         if output_type.lower().strip() == "json":
             statistics_str = json.dumps(statistics, indent=4, sort_keys=True, ensure_ascii=False)
             return json.loads(statistics_str)
-        elif output_type.lower().strip() == "csv":
+        if output_type.lower().strip() == "csv":
             output = io.StringIO()
-            w = csv.DictWriter(output, stats_obj.captions)
-            w.writeheader()
+            csv_writer = csv.DictWriter(output, stats_obj.captions)
+            csv_writer.writeheader()
             for obj_name in statistics:
-                w.writerow(statistics[obj_name])
+                csv_writer.writerow(statistics[obj_name])
             attach_stats_csv(context, self.logger, view_name, output.getvalue().strip())
             return output.getvalue().strip()
-        else:
-            raise TgnError(f'Output type should be CSV/JSON - got "{output_type}"')
+        raise TgnError(f'Output type should be CSV/JSON - got "{output_type}"')
 
-    def run_quick_test(self, context, test):
+    def run_quick_test(self, context: ResourceCommandContext, test: str) -> None:
+        """Run quick test."""
         self.ixn.quick_test_apply(test)
         self.ixn.quick_test_start(test, blocking=True, timeout=3600 * 24)
         output = io.BytesIO()
         self.ixn.root.quick_tests[test].get_report(output)
         attach_stats_csv(context, self.logger, "quick_test", output.getvalue().strip(), suffix="pdf")
 
-    def get_session_id(self):
+    def get_session_id(self) -> str:
+        """Get REST session ID."""
         return self.ixn.api.session
 
-    def get_children(self, obj_ref, child_type):
+    def get_children(self, obj_ref: str, child_type: str) -> list:
+        """Get object attributes."""
         return self.ixn.api.getList(obj_ref, child_type)
 
-    def get_attributes(self, obj_ref):
+    def get_attributes(self, obj_ref: str) -> dict:
+        """Get object attributes."""
         return self.ixn.api.getAttributes(obj_ref)
 
-    def set_attribute(self, obj_ref, attr_name, attr_value):
-        return self.ixn.api.setAttributes(obj_ref, **{attr_name: attr_value})
+    def set_attribute(self, obj_ref: str, attr_name: str, attr_value: str) -> None:
+        """Set traffic generator object attribute."""
+        self.ixn.api.setAttributes(obj_ref, **{attr_name: attr_value})
