@@ -1,24 +1,22 @@
 description: TOSCA based IxNetwork Controller shell
+
+tosca_definitions_version: tosca_simple_yaml_1_0
+
 imports:
 - cloudshell_standard: cloudshell_traffic_generator_controller_standard_2_0_0.yaml
+
 metadata:
   template_author: Quali
   template_icon: shell-icon.png
   template_name: Ixia IxNetwork Controller Shell 2G
-  template_version: 3.0.3
+  template_version: 3.1.1
+
 node_types:
   vendor.resource.IxNetwork Controller Shell 2G:
-    artifacts:
-      driver:
-        file: IxiaIxNetworkControllerShell2GDriver.zip
-        type: tosca.artifacts.File
-      icon:
-        file: shell-icon.png
-        type: tosca.artifacts.File
+    derived_from: cloudshell.nodes.TrafficGeneratorController
     capabilities:
       concurrent_execution:
         type: cloudshell.capabilities.SupportConcurrentCommands
-    derived_from: cloudshell.nodes.TrafficGeneratorController
     properties:
       License Server:
         default: localhost
@@ -26,4 +24,10 @@ node_types:
         tags:
         - user_input
         type: string
-tosca_definitions_version: tosca_simple_yaml_1_0
+    artifacts:
+      driver:
+        file: IxiaIxNetworkControllerShell2GDriver.zip
+        type: tosca.artifacts.File
+      icon:
+        file: shell-icon.png
+        type: tosca.artifacts.File

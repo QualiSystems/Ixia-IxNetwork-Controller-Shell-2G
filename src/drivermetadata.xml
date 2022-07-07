@@ -52,6 +52,7 @@
             <Parameters>
                 <Parameter Description="The requested view name, see shell's documentation for details" DisplayName="View Name" Mandatory="True" Name="view_name" Type="String" />
                 <Parameter AllowedValues="csv,json" DefaultValue="csv" Description="CSV or JSON" DisplayName="Output Type" Mandatory="True" Name="output_type" Type="Lookup" />
+                <Parameter Description="The name of the column that holds the key of the statistics table." DisplayName="Table Key" Mandatory="False" Name="table_key" Type="String" />
             </Parameters>
         </Command>
 

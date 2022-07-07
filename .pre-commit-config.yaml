@@ -1,4 +1,4 @@
-exclude: src/stc_data_model.py
+exclude: src/ixn_data_model.py
 repos:
   - repo: https://github.com/timothycrosley/isort
     rev: 5.10.1

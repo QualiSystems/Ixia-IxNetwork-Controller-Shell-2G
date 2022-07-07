@@ -4,6 +4,7 @@ Test IxNetworkController2GDriver.
 import json
 import time
 from pathlib import Path
+from typing import Iterable
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -11,7 +12,7 @@ from cloudshell.api.cloudshell_api import AttributeNameValue, CloudShellAPISessi
 from cloudshell.shell.core.driver_context import ResourceCommandContext
 from cloudshell.traffic.helpers import get_reservation_id, get_resources_from_reservation, set_family_attribute
 from cloudshell.traffic.tg import IXIA_CHASSIS_MODEL, IXNETWORK_CONTROLLER_MODEL
-from shellfoundry_traffic.test_helpers import TestHelpers, create_session_from_config, skip_if_offline  # noqa: F401
+from shellfoundry_traffic.test_helpers import TestHelpers, create_session_from_config
 from trafficgenerator.tgn_utils import TgnError
 
 from src.ixn_driver import IxNetworkController2GDriver
@@ -19,7 +20,7 @@ from src.ixn_driver import IxNetworkController2GDriver
 ALIAS = "IXN Controller"
 
 chassis_900 = "192.168.65.37"
-chassis_910 = "192.168.65.21"
+chassis_910 = "172.30.150.53"
 
 linux_900 = "192.168.65.34:443"
 linux_910 = "192.168.65.23:443"
@@ -28,8 +29,7 @@ windows_900 = "localhost:11009"
 windows_910 = "localhost:11009"
 
 ports_900 = ["ixia-900-1/Module1/Port2", "ixia-900-1/Module1/Port1"]
-ports_910 = ["offline-debug-910-1/Module1/Port2", "offline-debug-910-1/Module1/Port1"]
-
+ports_910 = ["ixia/Module1/Port5", "ixia/Module1/Port6"]
 
 server_properties = {
     "linux_900": {"server": linux_900, "ports": ports_900, "auth": ("admin", "admin"), "config_version": "ngpf"},
@@ -40,38 +40,41 @@ server_properties = {
     "windows_910_ngpf": {"server": windows_910, "ports": ports_910, "auth": None, "config_version": "ngpf"},
 }
 
+LICENSE_SERVER = "172.30.150.53"
+
 
 @pytest.fixture(scope="session")
 def session() -> CloudShellAPISession:
-    yield create_session_from_config()
+    """Yield session."""
+    return create_session_from_config()
 
 
 @pytest.fixture()
-def test_helpers(session: CloudShellAPISession) -> TestHelpers:
+def test_helpers(session: CloudShellAPISession) -> Iterable[TestHelpers]:
     test_helpers = TestHelpers(session)
     test_helpers.create_reservation()
     yield test_helpers
     test_helpers.end_reservation()
 
 
-@pytest.fixture(params=["windows_910"])
+@pytest.fixture(params=["windows_910_ngpf"])
 def server(request: SubRequest) -> list:
     controller_address = server_properties[request.param]["server"].split(":")[0]
     controller_port = server_properties[request.param]["server"].split(":")[1]
     ports = server_properties[request.param]["ports"]
     config_version = server_properties[request.param]["config_version"]
-    yield controller_address, controller_port, ports, config_version
+    return [controller_address, controller_port, ports, config_version]
 
 
 @pytest.fixture()
-def driver(test_helpers: TestHelpers, server: list) -> IxNetworkController2GDriver:
+def driver(test_helpers: TestHelpers, server: list) -> Iterable[IxNetworkController2GDriver]:
     controller_address, controller_port, _, _ = server
     attributes = {
         f"{IXNETWORK_CONTROLLER_MODEL}.Address": controller_address,
         f"{IXNETWORK_CONTROLLER_MODEL}.Controller TCP Port": controller_port,
         f"{IXNETWORK_CONTROLLER_MODEL}.User": "admin",
         f"{IXNETWORK_CONTROLLER_MODEL}.Password": "DxTbqlSgAVPmrDLlHvJrsA==",
-        f"{IXNETWORK_CONTROLLER_MODEL}.License Server": "192.168.42.61",
+        f"{IXNETWORK_CONTROLLER_MODEL}.License Server": LICENSE_SERVER,
     }
     init_context = test_helpers.service_init_command_context(IXNETWORK_CONTROLLER_MODEL, attributes)
     driver = IxNetworkController2GDriver()
@@ -88,7 +91,7 @@ def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: li
         AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.Controller TCP Port", controller_port),
         AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.User", "admin"),
         AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.Password", "admin"),
-        AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.License Server", "192.168.42.61"),
+        AttributeNameValue(f"{IXNETWORK_CONTROLLER_MODEL}.License Server", LICENSE_SERVER),
     ]
     session.AddServiceToReservation(test_helpers.reservation_id, IXNETWORK_CONTROLLER_MODEL, ALIAS, attributes)
     context = test_helpers.resource_command_context(service_name=ALIAS)
@@ -96,7 +99,7 @@ def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: li
     reservation_ports = get_resources_from_reservation(context, f"{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort")
     set_family_attribute(context, reservation_ports[0].Name, "Logical Name", "Port 1")
     set_family_attribute(context, reservation_ports[1].Name, "Logical Name", "Port 2")
-    yield context
+    return context
 
 
 class TestIxNetworkControllerDriver:
@@ -105,7 +108,6 @@ class TestIxNetworkControllerDriver:
     def test_load_config(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
         self._load_config(driver, context, server, "test_config")
 
-    @pytest.mark.usefixtures("skip_if_offline")
     def test_run_traffic(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
         self._load_config(driver, context, server, "test_config")
         driver.send_arp(context)
@@ -114,17 +116,16 @@ class TestIxNetworkControllerDriver:
         driver.stop_traffic(context)
         driver.start_traffic(context, "False")
         driver.stop_traffic(context)
-        stats = driver.get_statistics(context, "Port Statistics", "JSON")
+        stats = driver.get_statistics(context, "Port Statistics", "JSON", "")
         assert int(stats["Port 1"]["Frames Tx."]) >= 200
         assert int(stats["Port 1"]["Frames Tx."]) <= 1800
         driver.start_traffic(context, "True")
         time.sleep(4)
-        stats = driver.get_statistics(context, "Port Statistics", "JSON")
+        stats = driver.get_statistics(context, "Port Statistics", "JSON", "")
         assert int(stats["Port 1"]["Frames Tx."]) >= 2000
-        driver.get_statistics(context, "Port Statistics", "csv")
+        driver.get_statistics(context, "Port Statistics", "csv", "")
         driver.stop_protocols(context)
 
-    @pytest.mark.usefixtures("skip_if_offline")
     def test_run_quick_test(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
         self._load_config(driver, context, server, "quick_test")
         driver.run_quick_test(context, "QuickTest1")
@@ -181,7 +182,6 @@ class TestIxNetworkControllerShell:
     def test_load_config(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
         self._load_config(session, context, ALIAS, server, "test_config")
 
-    @pytest.mark.usefixtures("skip_if_offline")
     def test_run_traffic(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
         self._load_config(session, context, ALIAS, server, "test_config")
         session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "send_arp")
@@ -193,7 +193,6 @@ class TestIxNetworkControllerShell:
         stats = session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "get_statistics", cmd_inputs)
         assert int(json.loads(stats.Output)["Port 1"]["Frames Tx."]) >= 2000
 
-    @pytest.mark.usefixtures("skip_if_offline")
     def test_run_quick_test(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
         self._load_config(session, context, ALIAS, server, "quick_test")
         cmd_inputs = [InputNameValue("test", "QuickTest1")]
