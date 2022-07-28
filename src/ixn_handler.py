@@ -53,7 +53,7 @@ class IxnHandler:
         self.logger.debug(f"Connecting to API server {api_server} at {api_port} port with auth {auth}")
         self.ixn.connect(api_server=api_server, api_port=int(api_port), auth=auth)
         if service.license_server:
-            self.ixn.api.set_licensing(licensingServers=[service.license_server])
+            self.ixn.api.set_licensing(licensing_servers=[service.license_server])
 
     def cleanup(self) -> None:
         """Release all ports and disconnect from IxNetwork API server."""

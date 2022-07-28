@@ -20,25 +20,25 @@ from src.ixn_driver import IxNetworkController2GDriver
 
 ALIAS = "IXN Controller"
 
-chassis_900 = "192.168.65.37"
-chassis_910 = "172.30.150.53"
+CHASSIS_900 = "192.168.65.37"
+CHASSIS_910 = "172.30.150.53"
 
-linux_900 = "192.168.65.34:443"
-linux_910 = "192.168.65.23:443"
+LINUX_900 = "192.168.65.34:443"
+LINUX_910 = "192.168.65.23:443"
 
-windows_900 = "localhost:11009"
-windows_910 = "localhost:11009"
+WINDOWS_900 = "localhost:11009"
+WINDOWS_910 = "localhost:11009"
 
 ports_900 = ["ixia-900-1/Module1/Port2", "ixia-900-1/Module1/Port1"]
 ports_910 = ["ixia/Module1/Port5", "ixia/Module1/Port6"]
 
 server_properties = {
-    "linux_900": {"server": linux_900, "ports": ports_900, "auth": ("admin", "admin"), "config_version": "ngpf"},
-    "linux_910": {"server": linux_910, "ports": ports_910, "auth": ("admin", "admin"), "config_version": "ngpf"},
-    "windows_900": {"server": windows_900, "ports": ports_900, "auth": None, "config_version": "classic"},
-    "windows_900_ngpf": {"server": windows_900, "ports": ports_900, "auth": None, "config_version": "ngpf"},
-    "windows_910": {"server": windows_910, "ports": ports_910, "auth": None, "config_version": "classic"},
-    "windows_910_ngpf": {"server": windows_910, "ports": ports_910, "auth": None, "config_version": "ngpf"},
+    "linux_900": {"server": LINUX_900, "ports": ports_900, "auth": ("admin", "admin"), "config_version": "ngpf"},
+    "linux_910": {"server": LINUX_910, "ports": ports_910, "auth": ("admin", "admin"), "config_version": "ngpf"},
+    "windows_900": {"server": WINDOWS_900, "ports": ports_900, "auth": None, "config_version": "classic"},
+    "windows_900_ngpf": {"server": WINDOWS_900, "ports": ports_900, "auth": None, "config_version": "ngpf"},
+    "windows_910": {"server": WINDOWS_910, "ports": ports_910, "auth": None, "config_version": "classic"},
+    "windows_910_ngpf": {"server": WINDOWS_910, "ports": ports_910, "auth": None, "config_version": "ngpf"},
 }
 
 LICENSE_SERVER = "172.30.150.53"
@@ -62,8 +62,9 @@ def test_helpers(session: CloudShellAPISession) -> Iterable[TestHelpers]:
 @pytest.fixture(params=["windows_910_ngpf"])
 def server(request: SubRequest) -> list:
     """Yield server information."""
-    controller_address = server_properties[request.param]["server"].split(":")[0]
-    controller_port = server_properties[request.param]["server"].split(":")[1]
+    controller: str = server_properties[request.param]["server"]  # type: ignore
+    controller_address = controller.split(":")[0]
+    controller_port = controller.split(":")[1]
     ports = server_properties[request.param]["ports"]
     config_version = server_properties[request.param]["config_version"]
     return [controller_address, controller_port, ports, config_version]
@@ -110,7 +111,8 @@ def context(session: CloudShellAPISession, test_helpers: TestHelpers, server: li
 class TestIxNetworkControllerDriver:
     """Test direct driver calls."""
 
-    def test_session_id(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+    def test_hidden_commands(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext) -> None:
+        """Test hidden commands - get_session_id, get_children etc."""
         session_id = driver.get_session_id(context)
         root_obj = f"{session_id}ixnetwork"
         ixn_globals = driver.get_children(context, obj_ref=root_obj, child_type="globals")
@@ -125,9 +127,11 @@ class TestIxNetworkControllerDriver:
         assert preferences_attrs["connectPortsOnLoadConfig"] is True
 
     def test_load_config(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+        """Test load configuration command."""
         self._load_config(driver, context, server, "test_config")
 
     def test_run_traffic(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+        """Test complete cycle - from load_config to get_statistics."""
         self._load_config(driver, context, server, "test_config")
         driver.send_arp(context)
         driver.start_protocols(context)
@@ -146,10 +150,12 @@ class TestIxNetworkControllerDriver:
         driver.stop_protocols(context)
 
     def test_run_quick_test(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+        """Test run_quick_test command."""
         self._load_config(driver, context, server, "quick_test")
         driver.run_quick_test(context, "QuickTest1")
 
     def test_negative(self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list) -> None:
+        """Negative tests."""
         reservation_ports = get_resources_from_reservation(context, f"{IXIA_CHASSIS_MODEL}.GenericTrafficGeneratorPort")
         assert len(reservation_ports) == 2
         config_file_name = Path(__file__).parent.joinpath(f"test_config_{server[3]}.ixncfg").as_posix()
@@ -166,9 +172,11 @@ class TestIxNetworkControllerDriver:
         # cleanup
         set_family_attribute(context, reservation_ports[1].Name, "Logical Name", "Port 2")
 
+    @staticmethod
     def _load_config(
-        self, driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list, config_name: str
+        driver: IxNetworkController2GDriver, context: ResourceCommandContext, server: list, config_name: str
     ) -> None:
+        """Get full path to the requested configuration file based on fixture and run load_config."""
         config_file = Path(__file__).parent.joinpath(f"{config_name}_{server[3]}.ixncfg")
         driver.load_config(context, config_file.as_posix())
 
@@ -176,7 +184,8 @@ class TestIxNetworkControllerDriver:
 class TestIxNetworkControllerShell:
     """Test indirect Shell calls."""
 
-    def test_session_id(self, session: CloudShellAPISession, context: ResourceCommandContext) -> None:
+    def test_hidden_commands(self, session: CloudShellAPISession, context: ResourceCommandContext) -> None:
+        """Test hidden commands - get_session_id, get_children etc."""
         session_id = session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "get_session_id")
         root_obj = f"/{session_id.Output[1:-1]}/ixnetwork"
         cmd_inputs = [InputNameValue("obj_ref", root_obj), InputNameValue("child_type", "globals")]
@@ -199,9 +208,11 @@ class TestIxNetworkControllerShell:
         assert json.loads(preferences_attrs.Output)["connectPortsOnLoadConfig"] is True
 
     def test_load_config(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
+        """Test load configuration command."""
         self._load_config(session, context, ALIAS, server, "test_config")
 
     def test_run_traffic(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
+        """Test complete cycle - from load_config to get_statistics."""
         self._load_config(session, context, ALIAS, server, "test_config")
         session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "send_arp")
         session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "start_protocols")
@@ -213,13 +224,17 @@ class TestIxNetworkControllerShell:
         assert int(json.loads(stats.Output)["Port 1"]["Frames Tx."]) >= 2000
 
     def test_run_quick_test(self, session: CloudShellAPISession, context: ResourceCommandContext, server: list) -> None:
+        """Test run_quick_test command."""
         self._load_config(session, context, ALIAS, server, "quick_test")
         cmd_inputs = [InputNameValue("test", "QuickTest1")]
         session.ExecuteCommand(get_reservation_id(context), ALIAS, "Service", "run_quick_test", cmd_inputs)
 
+    # pylint: disable=too-many-arguments
+    @staticmethod
     def _load_config(
-        self, session: CloudShellAPISession, context: ResourceCommandContext, alias: str, server: list, config_name: str
+        session: CloudShellAPISession, context: ResourceCommandContext, alias: str, server: list, config_name: str
     ) -> None:
+        """Test run_quick_test command."""
         config_file = Path(__file__).parent.joinpath(f"{config_name}_{server[3]}.ixncfg")
         cmd_inputs = [InputNameValue("config_file_location", config_file.as_posix())]
         session.ExecuteCommand(get_reservation_id(context), alias, "Service", "load_config", cmd_inputs)
