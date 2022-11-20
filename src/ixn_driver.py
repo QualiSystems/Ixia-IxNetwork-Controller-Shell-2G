@@ -2,7 +2,7 @@
 IxNetwork controller shell driver API. The business logic is implemented in ixn_handler.py.
 """
 # pylint: disable=unused-argument
-from typing import Union
+from typing import Optional, Union
 
 from cloudshell.shell.core.driver_context import CancellationContext, InitCommandContext, ResourceCommandContext
 from cloudshell.traffic.tg import TgControllerDriver, enqueue_keep_alive
@@ -54,7 +54,7 @@ class IxNetworkController2GDriver(TgControllerDriver):
         self.handler.stop_traffic()
 
     def get_statistics(
-        self, context: ResourceCommandContext, view_name: str, output_type: str, table_key: str
+        self, context: ResourceCommandContext, view_name: str, output_type: str, table_key: Optional[str]
     ) -> Union[dict, str]:
         """Get view statistics."""
         return self.handler.get_statistics(context, view_name, output_type, table_key)

@@ -30,7 +30,7 @@ WINDOWS_900 = "localhost:11009"
 WINDOWS_910 = "localhost:11009"
 
 ports_900 = ["ixia-900-1/Module1/Port2", "ixia-900-1/Module1/Port1"]
-ports_910 = ["ixia/Module1/Port5", "ixia/Module1/Port6"]
+ports_910 = ["ixia/Module1/Port1", "ixia/Module1/Port2"]
 
 server_properties = {
     "linux_900": {"server": LINUX_900, "ports": ports_900, "auth": ("admin", "admin"), "config_version": "ngpf"},
@@ -63,8 +63,7 @@ def test_helpers(session: CloudShellAPISession) -> Iterable[TestHelpers]:
 def server(request: SubRequest) -> list:
     """Yield server information."""
     controller: str = server_properties[request.param]["server"]  # type: ignore
-    controller_address = controller.split(":")[0]
-    controller_port = controller.split(":")[1]
+    controller_address, controller_port = controller.split(":")
     ports = server_properties[request.param]["ports"]
     config_version = server_properties[request.param]["config_version"]
     return [controller_address, controller_port, ports, config_version]
@@ -234,7 +233,7 @@ class TestIxNetworkControllerShell:
     def _load_config(
         session: CloudShellAPISession, context: ResourceCommandContext, alias: str, server: list, config_name: str
     ) -> None:
-        """Test run_quick_test command."""
+        """Get full path to the requested configuration file based on fixture and run load_config."""
         config_file = Path(__file__).parent.joinpath(f"{config_name}_{server[3]}.ixncfg")
         cmd_inputs = [InputNameValue("config_file_location", config_file.as_posix())]
         session.ExecuteCommand(get_reservation_id(context), alias, "Service", "load_config", cmd_inputs)

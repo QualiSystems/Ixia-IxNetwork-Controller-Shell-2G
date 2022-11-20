@@ -118,7 +118,7 @@ class IxnHandler:
         """Get statistics for the requested view."""
         if view_name == "Port Statistics":
             stats_obj = IxnPortStatistics()
-        elif view_name == "Traffic Item":
+        elif view_name == "Traffic Item Statistics":
             stats_obj = IxnTrafficItemStatistics()
         elif view_name == "Flow Statistics":
             stats_obj = IxnFlowStatistics()

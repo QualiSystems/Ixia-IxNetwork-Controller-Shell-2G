@@ -9,7 +9,7 @@ metadata:
   template_author: Quali
   template_icon: shell-icon.png
   template_name: Ixia IxNetwork Controller Shell 2G
-  template_version: 3.1.2
+  template_version: 3.1.3
 
 node_types:
   vendor.resource.IxNetwork Controller Shell 2G:
@@ -26,7 +26,7 @@ node_types:
         type: string
     artifacts:
       driver:
-        file: IxiaIxNetworkControllerShell2GDriver.zip
+        file: IxiaIxNetworkControllerShell2G.zip
         type: tosca.artifacts.File
       icon:
         file: shell-icon.png
