@@ -20,25 +20,14 @@ from src.ixn_driver import IxNetworkController2GDriver
 
 ALIAS = "IXN Controller"
 
-CHASSIS_900 = "192.168.65.37"
-CHASSIS_910 = "172.30.150.53"
-
-LINUX_900 = "192.168.65.34:443"
 LINUX_910 = "192.168.65.23:443"
-
-WINDOWS_900 = "localhost:11009"
 WINDOWS_910 = "localhost:11009"
-
-ports_900 = ["ixia-900-1/Module1/Port2", "ixia-900-1/Module1/Port1"]
-ports_910 = ["ixia/Module1/Port1", "ixia/Module1/Port2"]
+PORTS_910 = ["IxVM 9.10 - 1 - offline-debug/Module1/Port1", "IxVM 9.10 - 1 - offline-debug/Module1/Port2"]
 
 server_properties = {
-    "linux_900": {"server": LINUX_900, "ports": ports_900, "auth": ("admin", "admin"), "config_version": "ngpf"},
-    "linux_910": {"server": LINUX_910, "ports": ports_910, "auth": ("admin", "admin"), "config_version": "ngpf"},
-    "windows_900": {"server": WINDOWS_900, "ports": ports_900, "auth": None, "config_version": "classic"},
-    "windows_900_ngpf": {"server": WINDOWS_900, "ports": ports_900, "auth": None, "config_version": "ngpf"},
-    "windows_910": {"server": WINDOWS_910, "ports": ports_910, "auth": None, "config_version": "classic"},
-    "windows_910_ngpf": {"server": WINDOWS_910, "ports": ports_910, "auth": None, "config_version": "ngpf"},
+    "linux_910": {"server": LINUX_910, "ports": PORTS_910, "auth": ("admin", "admin"), "config_version": "ngpf"},
+    "windows_910": {"server": WINDOWS_910, "ports": PORTS_910, "auth": None, "config_version": "classic"},
+    "windows_910_ngpf": {"server": WINDOWS_910, "ports": PORTS_910, "auth": None, "config_version": "ngpf"},
 }
 
 LICENSE_SERVER = "172.30.150.53"
